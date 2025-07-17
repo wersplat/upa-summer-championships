@@ -106,7 +106,12 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
               unoptimized
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-gray-300 dark:bg-gray-600 text-xs text-gray-600 dark:text-gray-300">
+            <div className="h-full w-full flex items-center justify-center text-xs text-gray-600 dark:text-gray-300"
+                 style={{
+                   backgroundColor: 'rgb(209, 213, 219)',
+                   '--dark-bg': 'rgb(75, 85, 99)'
+                 } as React.CSSProperties}
+            >
               {team.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -196,7 +201,12 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
                                   unoptimized
                                 />
                               ) : (
-                                <div className="h-5 w-5 rounded-sm bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs">
+                                <div className="h-5 w-5 rounded-sm flex items-center justify-center text-xs"
+                                     style={{
+                                       backgroundColor: 'rgb(209, 213, 219)',
+                                       '--dark-bg': 'rgb(75, 85, 99)'
+                                     } as React.CSSProperties}
+                                >
                                   {match.event.name.charAt(0).toUpperCase()}
                                 </div>
                               )}

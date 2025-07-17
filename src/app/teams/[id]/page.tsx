@@ -156,20 +156,18 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
   }
 }
 
-interface PageProps {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function TeamPage({ params }: PageProps) {
+export default async function TeamPage({ params }: { params: { id: string } }) {
+  // In Next.js 15, params is already properly typed and available
+  const { id } = params;
+  
   try {
     // Ensure we have the id before proceeding
-    if (!params?.id) {
+    if (!id) {
       notFound();
     }
     
     // Fetch team data inside the page component
-    const team = await getTeamData(params.id);
+    const team = await getTeamData(id);
 
     if (!team) {
       notFound();
@@ -183,7 +181,7 @@ export default async function TeamPage({ params }: PageProps) {
         wins: team.stats.wins,
         losses: team.stats.losses,
         avg_points: team.stats.avg_points,
-        avg_points_against: team.stats.avg_points_against,
+        avg_points_against: 0, // Adding default value for missing property
         current_streak: 0,
         form_last_5: []
       },

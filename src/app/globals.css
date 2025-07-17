@@ -1,6 +1,49 @@
 @import "tailwindcss/preflight";
 @import "tailwindcss/utilities";
 
+@theme {
+  --color-navy: #081C3C;
+  --color-blue: #0070CE;
+  --color-gold: #FFC72C;
+  --color-orange: #FF5F1F;
+  --color-red: #C8102E;
+  
+  --color-white: #ffffff;
+  --color-black: #000000;
+  
+  --color-border-light: 229 231 235;
+  --color-border-dark: 55 65 81;
+}
+
+/* Base styles */
+@layer base {
+  * {
+    border-color: rgb(var(--color-border-light));
+  }
+  
+  .dark * {
+    border-color: rgb(var(--color-border-dark));
+  }
+  
+  body {
+    min-height: 100vh;
+    color: var(--color-white);
+    background: linear-gradient(to bottom, var(--color-navy), var(--color-blue));
+  }
+  
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  
+  h1 { font-size: 2.25rem; line-height: 2.5rem; }
+  h2 { font-size: 1.875rem; line-height: 2.25rem; }
+  h3 { font-size: 1.5rem; line-height: 2rem; }
+  h4 { font-size: 1.25rem; line-height: 1.75rem; }
+  h5 { font-size: 1.125rem; line-height: 1.75rem; }
+}
+
 /* Custom scrollbar for dark mode */
 @layer utilities {
   .scrollbar-thin {
@@ -19,15 +62,28 @@
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-gray-800;
+    background-color: rgb(243, 244, 246);
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-track {
+    background-color: rgb(31, 41, 55);
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+    background-color: rgb(209, 213, 219);
+    border-radius: 9999px;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(75, 85, 99);
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400 dark:bg-gray-500;
+    background-color: rgb(156, 163, 175);
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107, 114, 128);
   }
 }
 
@@ -38,7 +94,14 @@ html {
 
 /* Custom focus styles */
 *:focus {
-  @apply outline-none ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-900;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
+}
+
+.dark *:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
 }
 
 /* Animation for the loading spinner */

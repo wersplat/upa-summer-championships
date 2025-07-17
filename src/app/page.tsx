@@ -69,7 +69,15 @@ export default async function Home() {
             {m.team_a?.logo_url ? (
               <Image src={m.team_a.logo_url} alt={m.team_a.name} width={24} height={24} className="rounded-full" unoptimized />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs">{m.team_a?.name[0]}</div>
+              <div 
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                style={{
+                  backgroundColor: 'rgb(209, 213, 219)',
+                  '--dark-bg': 'rgb(75, 85, 99)'
+                } as React.CSSProperties}
+              >
+                {m.team_a?.name[0]}
+              </div>
             )}
             <span>{m.team_a?.name}</span>
           </div>
@@ -79,7 +87,15 @@ export default async function Home() {
             {m.team_b?.logo_url ? (
               <Image src={m.team_b.logo_url} alt={m.team_b.name} width={24} height={24} className="rounded-full" unoptimized />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs">{m.team_b?.name[0]}</div>
+              <div 
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                style={{
+                  backgroundColor: 'rgb(209, 213, 219)',
+                  '--dark-bg': 'rgb(75, 85, 99)'
+                } as React.CSSProperties}
+              >
+                {m.team_b?.name[0]}
+              </div>
             )}
             <span>{m.team_b?.name}</span>
           </div>

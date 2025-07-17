@@ -1,13 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['qwpxsufrgigpjcxtnery.supabase.co'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'qwpxsufrgigpjcxtnery.supabase.co',
         port: '',
         pathname: '/storage/v1/object/sign/team-logos/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'qwpxsufrgigpjcxtnery.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/player-avatars/**',
       },
     ],
   },
