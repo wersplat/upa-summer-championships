@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import AppBar from '@mui/material/AppBar';
@@ -10,26 +10,11 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import { LightMode, DarkMode } from '@mui/icons-material';
+import { ColorModeContext } from './MuiThemeProvider';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const { toggleColorMode, mode } = useContext(ColorModeContext);
   const pathname = usePathname();
-
-  // Initialize dark mode from localStorage or system preference
-  useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') === 'true' || 
-      (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    
-    setDarkMode(isDark);
-    document.documentElement.classList.toggle('dark', isDark);
-  }, []);
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('darkMode', String(newMode));
-    document.documentElement.classList.toggle('dark', newMode);
-  };
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -55,8 +40,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               Teams
             </Typography>
           </Box>
-          <IconButton color="inherit" onClick={toggleDarkMode} aria-label="Toggle dark mode">
-            {darkMode ? <LightMode /> : <DarkMode />}
+          <IconButton color="inherit" onClick={toggleColorMode} aria-label="Toggle dark mode">
+            {mode === 'dark' ? <LightMode /> : <DarkMode />}
           </IconButton>
         </Toolbar>
       </AppBar>
