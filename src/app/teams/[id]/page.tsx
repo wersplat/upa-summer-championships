@@ -111,13 +111,20 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
              (match.team_b_id === teamData.id && scoreB > scoreA);
     }).length || 0;
     
-    const totalPoints = matchesData?.reduce((sum, match) => {
-      return match.team_a_id === teamData.id 
-        ? sum + (match.score_a || 0) 
+    const totalPointsFor = matchesData?.reduce((sum, match) => {
+      return match.team_a_id === teamData.id
+        ? sum + (match.score_a || 0)
         : sum + (match.score_b || 0);
     }, 0) || 0;
 
-    const avgPoints = gamesPlayed > 0 ? Math.round((totalPoints / gamesPlayed) * 10) / 10 : 0;
+    const totalPointsAgainst = matchesData?.reduce((sum, match) => {
+      return match.team_a_id === teamData.id
+        ? sum + (match.score_b || 0)
+        : sum + (match.score_a || 0);
+    }, 0) || 0;
+
+    const avgPoints = gamesPlayed > 0 ? Math.round((totalPointsFor / gamesPlayed) * 10) / 10 : 0;
+    const avgPointsAgainst = gamesPlayed > 0 ? Math.round((totalPointsAgainst / gamesPlayed) * 10) / 10 : 0;
 
     return {
       ...teamData,
@@ -138,6 +145,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       stats: {
         games_played: gamesPlayed,
         avg_points: avgPoints,
+        avg_points_against: avgPointsAgainst,
         wins: wins,
         losses: gamesPlayed - wins
       }
@@ -174,11 +182,10 @@ export default async function TeamPage({ params }: PageProps) {
         games_played: team.stats.games_played,
         wins: team.stats.wins,
         losses: team.stats.losses,
-        draws: 0, // This would come from your data if you track draws
-        goals_for: 0, // Update if you track goals
-        goals_against: 0, // Update if you track goals against
-        current_streak: 0, // Update if you track streaks
-        form_last_5: [] // Update if you track form
+        avg_points: team.stats.avg_points,
+        avg_points_against: team.stats.avg_points_against,
+        current_streak: 0,
+        form_last_5: []
       },
       // Add RP and ELO info if available
       team_rp: team.current_rp || 0,

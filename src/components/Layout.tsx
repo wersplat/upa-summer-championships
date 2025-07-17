@@ -33,7 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/" className="text-2xl font-extrabold text-white drop-shadow">
-                  UPA Summer Championship
+                  UPA Summer Championships
                 </Link>
               </div>
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -66,7 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <footer className="bg-navy border-t border-blue mt-8 text-white">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-white/80">
-            &copy; {new Date().getFullYear()} UPA Summer Championship. All rights reserved.
+            &copy; {new Date().getFullYear()} UPA Summer Championships. All rights reserved.
           </p>
         </div>
       </footer>
