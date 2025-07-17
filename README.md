@@ -1,6 +1,6 @@
-# UPA Summer Championship
+# UPA Summer Championships
 
-A modern web application for tracking teams, players, and matches in the UPA Summer Championship. Built with Next.js 14, TypeScript, Tailwind CSS, and Supabase.
+A modern web application for tracking teams, players, and matches in the UPA Summer Championships, an NBA 2K Pro Am tournament. Built with Next.js 14, TypeScript, Tailwind CSS, and Supabase.
 
 ## Features
 

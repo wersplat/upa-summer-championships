@@ -14,8 +14,8 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'UPA Summer Championship',
-  description: 'Track your favorite teams and players in the UPA Summer Championship',
+  title: 'UPA Summer Championships',
+  description: 'Track your favorite teams and players in the UPA Summer Championships',
 };
 
 export default function RootLayout({

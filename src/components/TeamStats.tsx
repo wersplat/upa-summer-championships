@@ -12,9 +12,8 @@ interface TeamStatsProps {
       games_played: number;
       wins: number;
       losses: number;
-      draws: number;
-      goals_for: number;
-      goals_against: number;
+      avg_points: number;
+      avg_points_against: number;
       current_streak: number;
       form_last_5: string[];
     };
@@ -43,13 +42,9 @@ export default function TeamStats({ team }: TeamStatsProps) {
     ? Math.round((stats.wins / stats.games_played) * 100) 
     : 0;
   
-  const goalDifference = stats.goals_for - stats.goals_against;
-  const avgGoalsFor = stats.games_played > 0 
-    ? (stats.goals_for / stats.games_played).toFixed(1) 
-    : 0;
-  const avgGoalsAgainst = stats.games_played > 0 
-    ? (stats.goals_against / stats.games_played).toFixed(1) 
-    : 0;
+  const avgPoints = stats.avg_points.toFixed(1);
+  const avgPointsAgainst = stats.avg_points_against.toFixed(1);
+  const pointDiff = (stats.avg_points - stats.avg_points_against).toFixed(1);
 
   const statsList = [
     { 
@@ -68,9 +63,9 @@ export default function TeamStats({ team }: TeamStatsProps) {
     },
     { 
       name: 'Record', 
-      value: `${stats.wins}-${stats.losses}${stats.draws > 0 ? `-${stats.draws}` : ''}`,
+      value: `${stats.wins}-${stats.losses}`,
       icon: '📈',
-      description: 'Win-Loss-Draw record'
+      description: 'Win-Loss record'
     },
     { 
       name: 'Win %', 
@@ -78,11 +73,11 @@ export default function TeamStats({ team }: TeamStatsProps) {
       icon: '🎯',
       description: 'Win percentage'
     },
-    { 
-      name: 'Goal Difference', 
-      value: goalDifference > 0 ? `+${goalDifference}` : goalDifference,
-      icon: '⚽',
-      description: 'Goals for minus goals against'
+    {
+      name: 'Point Differential',
+      value: pointDiff,
+      icon: '🏀',
+      description: 'Average points scored minus allowed'
     },
     { 
       name: 'Current Streak', 
@@ -93,16 +88,16 @@ export default function TeamStats({ team }: TeamStatsProps) {
       description: 'Current win/loss streak'
     },
     { 
-      name: 'Avg. Goals For', 
-      value: avgGoalsFor,
+      name: 'Avg. Points For',
+      value: avgPoints,
       icon: '⬆️',
-      description: 'Average goals scored per game'
+      description: 'Average points scored per game'
     },
-    { 
-      name: 'Avg. Goals Against', 
-      value: avgGoalsAgainst,
+    {
+      name: 'Avg. Points Against',
+      value: avgPointsAgainst,
       icon: '⬇️',
-      description: 'Average goals conceded per game'
+      description: 'Average points allowed per game'
     },
   ];
 
