@@ -25,7 +25,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full bg-gray-50 dark:bg-gray-900`}>
+      <body
+        className={`${inter.className} h-full bg-gradient-to-b from-navy to-blue`}
+      >
         <Layout>{children}</Layout>
       </body>
     </html>
