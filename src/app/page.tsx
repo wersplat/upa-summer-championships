@@ -1,7 +1,6 @@
 import { supabase } from '@/utils/supabase';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import Link from 'next/link';
 
 interface MatchWithTeams {
   id: string;
@@ -54,54 +53,76 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
 export default async function Home() {
   const [recent, upcoming] = await Promise.all([getRecentMatches(), getUpcomingMatches()]);
 
-  const renderMatch = (m: MatchWithTeams) => {
-    const date = m.played_at ? new Date(m.played_at) : null;
-    const score = m.score_a !== null && m.score_b !== null ? (
-      <span className="font-mono">{m.score_a}-{m.score_b}</span>
+  const renderMatchRow = (match: MatchWithTeams) => {
+    const date = match.played_at ? new Date(match.played_at) : null;
+    const score = match.score_a !== null && match.score_b !== null ? (
+      <span className="font-mono text-gray-900 dark:text-gray-100">{match.score_a}-{match.score_b}</span>
     ) : (
-      <span className="text-gray-400">vs</span>
+      <span className="text-gray-500 dark:text-gray-400">vs</span>
     );
 
     return (
-      <tr key={m.id} className="border-t border-gray-200 dark:border-gray-700">
-        <td className="px-4 py-2">
-          <div className="flex items-center space-x-2">
-            {m.team_a?.logo_url ? (
-              <Image src={m.team_a.logo_url} alt={m.team_a.name} width={24} height={24} className="rounded-full" unoptimized />
-            ) : (
-              <div 
-                className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
-                style={{
-                  backgroundColor: 'rgb(209, 213, 219)',
-                  '--dark-bg': 'rgb(75, 85, 99)'
-                } as React.CSSProperties}
-              >
-                {m.team_a?.name[0]}
+      <tr key={match.id} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
+              {match.team_a?.logo_url ? (
+                <Image 
+                  src={match.team_a.logo_url} 
+                  alt={match.team_a.name} 
+                  width={32} 
+                  height={32} 
+                  className="rounded-full" 
+                  unoptimized 
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {match.team_a?.name[0]}
+                </div>
+              )}
+            </div>
+            <div className="ml-4">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {match.team_a?.name}
               </div>
-            )}
-            <span>{m.team_a?.name}</span>
+            </div>
           </div>
         </td>
-        <td className="px-4 py-2">
-          <div className="flex items-center space-x-2">
-            {m.team_b?.logo_url ? (
-              <Image src={m.team_b.logo_url} alt={m.team_b.name} width={24} height={24} className="rounded-full" unoptimized />
-            ) : (
-              <div 
-                className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
-                style={{
-                  backgroundColor: 'rgb(209, 213, 219)',
-                  '--dark-bg': 'rgb(75, 85, 99)'
-                } as React.CSSProperties}
-              >
-                {m.team_b?.name[0]}
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
+              {match.team_b?.logo_url ? (
+                <Image 
+                  src={match.team_b.logo_url} 
+                  alt={match.team_b.name} 
+                  width={32} 
+                  height={32} 
+                  className="rounded-full" 
+                  unoptimized 
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {match.team_b?.name[0]}
+                </div>
+              )}
+            </div>
+            <div className="ml-4">
+              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {match.team_b?.name}
               </div>
-            )}
-            <span>{m.team_b?.name}</span>
+            </div>
           </div>
         </td>
-        <td className="px-4 py-2 text-center">{score}</td>
-        <td className="px-4 py-2 text-right">{date ? format(date, 'MMM d, h:mm a') : 'TBD'}</td>
+        <td className="px-6 py-4 whitespace-nowrap text-center">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {score}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-right">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {date ? format(date, 'MMM d, h:mm a') : 'TBD'}
+          </div>
+        </td>
       </tr>
     );
   };
@@ -118,18 +139,24 @@ export default async function Home() {
           <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Recent Results</h2>
         </div>
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <colgroup>
+            <col className="w-2/5" />
+            <col className="w-2/5" />
+            <col className="w-1/10" />
+            <col className="w-1/5" />
+          </colgroup>
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Home</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Away</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">Score</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Played</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Home</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Away</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Score</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Played</th>
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {recent.map(renderMatch)}
+            {recent.map((match) => renderMatchRow(match))}
             {recent.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">No recent matches</td></tr>
+              <tr><td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No recent matches</td></tr>
             )}
           </tbody>
         </table>
@@ -140,18 +167,29 @@ export default async function Home() {
           <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Upcoming Schedule</h2>
         </div>
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <colgroup>
+            <col className="w-2/5" />
+            <col className="w-2/5" />
+            <col className="w-1/10" />
+            <col className="w-1/5" />
+          </colgroup>
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Home</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Away</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">Score</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Tip Off</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Home</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Away</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Score</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tip Off</th>
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {upcoming.map(renderMatch)}
-            {upcoming.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-500">No upcoming games</td></tr>
+            {upcoming.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No upcoming games
+                </td>
+              </tr>
+            ) : (
+              upcoming.map((match) => renderMatchRow(match))
             )}
           </tbody>
         </table>
