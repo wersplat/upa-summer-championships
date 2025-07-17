@@ -26,14 +26,14 @@ export default function TeamStats({ team }: TeamStatsProps) {
   
   if (!stats) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+      <div className="bg-navy/80 shadow-sun overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6 border-b border-blue">
+          <h3 className="text-lg leading-6 font-extrabold text-white drop-shadow">
             Team Statistics
           </h3>
         </div>
         <div className="px-4 py-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No statistics available yet</p>
+          <p className="text-white/80">No statistics available yet</p>
         </div>
       </div>
     );
@@ -112,25 +112,25 @@ export default function TeamStats({ team }: TeamStatsProps) {
     switch (result) {
       case 'W':
         return (
-          <div key={index} className={`${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200`}>
+          <div key={index} className={`${baseClasses} bg-green-500 text-white`}>
             W
           </div>
         );
       case 'L':
         return (
-          <div key={index} className={`${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200`}>
+          <div key={index} className={`${baseClasses} bg-red text-white`}>
             L
           </div>
         );
       case 'D':
         return (
-          <div key={index} className={`${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200`}>
+          <div key={index} className={`${baseClasses} bg-gold text-navy`}>
             D
           </div>
         );
       default:
         return (
-          <div key={index} className={`${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300`}>
+          <div key={index} className={`${baseClasses} bg-blue text-white`}>
             —
           </div>
         );
@@ -138,20 +138,20 @@ export default function TeamStats({ team }: TeamStatsProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+    <div className="bg-navy/80 shadow-sun overflow-hidden sm:rounded-lg">
+      <div className="px-4 py-5 sm:px-6 border-b border-blue flex justify-between items-center">
         <div>
-          <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+          <h3 className="text-lg leading-6 font-extrabold text-white drop-shadow">
             Team Statistics
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-white/80">
             Season {new Date().getFullYear()} performance metrics
           </p>
         </div>
         
         {stats.form_last_5 && stats.form_last_5.length > 0 && (
           <div className="flex items-center space-x-1">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2">Form:</span>
+            <span className="text-sm font-medium text-white/80 mr-2">Form:</span>
             {stats.form_last_5.map((result, index) => renderFormIndicator(result, index))}
           </div>
         )}
@@ -162,21 +162,21 @@ export default function TeamStats({ team }: TeamStatsProps) {
           {statsList.map((item) => (
             <div 
               key={item.name} 
-              className="px-4 py-5 bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden sm:p-6 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150"
+              className="px-4 py-5 bg-white/10 rounded-lg overflow-hidden sm:p-6 hover:bg-white/20 transition-colors duration-150"
               title={item.description}
             >
               <div className="flex items-center">
                 <span className="text-lg mr-2" aria-hidden="true">{item.icon}</span>
-                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
+                <dt className="text-sm font-medium text-white/80 truncate">
                   {item.name}
                 </dt>
               </div>
               <div className="mt-2 flex items-baseline">
-                <dd className="text-2xl font-semibold text-gray-900 dark:text-white">
+                <dd className="text-2xl font-semibold text-white">
                   {item.value}
                 </dd>
                 {item.change !== undefined && item.change !== 0 && (
-                  <span className={`ml-2 text-sm font-medium ${item.change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <span className={`ml-2 text-sm font-medium ${item.change >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                     {item.change > 0 ? '↑' : '↓'} {Math.abs(item.change)}
                   </span>
                 )}

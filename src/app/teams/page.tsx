@@ -50,10 +50,10 @@ export default async function TeamsPage() {
   const teams = await getTeams();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl sm:tracking-tight lg:text-6xl">
+          <h1 className="text-4xl font-extrabold text-white sm:text-5xl sm:tracking-tight lg:text-6xl drop-shadow">
             UPA Summer Championship
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-300 sm:mt-4">
@@ -66,7 +66,7 @@ export default async function TeamsPage() {
             <Link
               key={team.id}
               href={`/teams/${team.id}`}
-              className="col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              className="col-span-1 bg-white rounded-lg shadow-sun overflow-hidden hover:shadow-lg transition-shadow duration-200"
             >
               <div className="p-6">
                 <div className="flex items-center">

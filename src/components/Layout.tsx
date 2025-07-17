@@ -27,19 +27,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className="bg-gradient-to-r from-navy to-blue shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                <Link href="/" className="text-2xl font-extrabold text-white drop-shadow">
                   UPA Summer Championship
                 </Link>
               </div>
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
                   href="/teams"
-                  className={`${pathname === '/teams' ? 'border-indigo-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  className={`${pathname === '/teams' ? 'border-gold text-white' : 'border-transparent text-white/70 hover:border-gold hover:text-white'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Teams
                 </Link>
@@ -49,7 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={toggleDarkMode}
-                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
+                className="p-2 rounded-full text-gold hover:text-orange focus:outline-none focus:ring-2 focus:ring-orange"
               >
                 <span className="sr-only">Toggle dark mode</span>
                 {darkMode ? (
@@ -63,9 +63,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="flex-grow">{children}</main>
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-8">
+      <footer className="bg-navy border-t border-blue mt-8 text-white">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-center text-sm text-white/80">
             &copy; {new Date().getFullYear()} UPA Summer Championship. All rights reserved.
           </p>
         </div>
