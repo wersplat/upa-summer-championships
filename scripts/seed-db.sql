@@ -1,16 +1,16 @@
 -- Insert sample teams
 WITH team1 AS (
-  INSERT INTO public.teams (name, region, slug, logo_url)
+  INSERT INTO public.teams (name, region, id, logo_url)
   VALUES ('Thunderbolts', 'North', 'thunderbolts', 'https://via.placeholder.com/150/FFD700/000000?text=TB')
   RETURNING id
 ),
 team2 AS (
-  INSERT INTO public.teams (name, region, slug, logo_url)
+  INSERT INTO public.teams (name, region, id, logo_url)
   VALUES ('Phoenix Rising', 'South', 'phoenix-rising', 'https://via.placeholder.com/150/FF4500/FFFFFF?text=PR')
   RETURNING id
 ),
 team3 AS (
-  INSERT INTO public.teams (name, region, slug, logo_url)
+  INSERT INTO public.teams (name, region, id, logo_url)
   VALUES ('Titan Titans', 'East', 'titan-titans', 'https://via.placeholder.com/150/1E90FF/FFFFFF?text=TT')
   RETURNING id
 ),

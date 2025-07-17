@@ -5,13 +5,17 @@ import Layout from '@/components/Layout';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'UPA Summer Championship',
-  description: 'Track your favorite teams and players in the UPA Summer Championship',
+// Viewport configuration
+export const viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#111827' },
   ],
+};
+
+export const metadata: Metadata = {
+  title: 'UPA Summer Championship',
+  description: 'Track your favorite teams and players in the UPA Summer Championship',
 };
 
 export default function RootLayout({

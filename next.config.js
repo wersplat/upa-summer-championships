@@ -4,7 +4,9 @@ const nextConfig = {
     domains: ['your-supabase-url.supabase.co'], // Replace with your Supabase URL
   },
   experimental: {
-    serverActions: true,
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
