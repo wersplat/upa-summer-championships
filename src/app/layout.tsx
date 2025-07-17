@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Layout from '@/components/Layout';
+import MuiThemeProvider from '@/components/MuiThemeProvider';
 
 // Optimize the Inter font with the 'latin' subset
 const inter = Inter({
@@ -43,9 +44,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="h-full bg-gradient-to-b from-navy to-blue">
-        <Layout>{children}</Layout>
+    <html lang="en" className={inter.variable}>
+      <body>
+        <MuiThemeProvider>
+          <Layout>{children}</Layout>
+        </MuiThemeProvider>
       </body>
     </html>
   );

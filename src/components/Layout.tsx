@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import { LightMode, DarkMode } from '@mui/icons-material';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
@@ -26,50 +32,42 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-gradient-to-r from-navy to-blue shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-2xl font-extrabold text-white drop-shadow">
-                  UPA Summer Championships
-                </Link>
-              </div>
-              <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
-                  href="/teams"
-                  className={`${pathname === '/teams' ? 'border-gold text-white' : 'border-transparent text-white/70 hover:border-gold hover:text-white'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                >
-                  Teams
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={toggleDarkMode}
-                className="p-2 rounded-full text-gold hover:text-orange focus:outline-none focus:ring-2 focus:ring-orange"
-              >
-                <span className="sr-only">Toggle dark mode</span>
-                {darkMode ? (
-                  <SunIcon className="h-6 w-6" aria-hidden="true" />
-                ) : (
-                  <MoonIcon className="h-6 w-6" aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      <main className="flex-grow">{children}</main>
-      <footer className="bg-navy border-t border-blue mt-8 text-white">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-white/80">
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static" sx={{ background: 'linear-gradient(to right,#001F3F,#1E40AF)' }}>
+        <Toolbar>
+          <Typography component={Link} href="/" variant="h6" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
+            UPA Summer Championships
+          </Typography>
+          <Box sx={{ display: { xs: 'none', sm: 'block' }, mr: 2 }}>
+            <Typography
+              component={Link}
+              href="/teams"
+              sx={{
+                color: pathname === '/teams' ? 'secondary.main' : 'inherit',
+                textDecoration: 'none',
+                borderBottom: 2,
+                borderColor: pathname === '/teams' ? 'secondary.main' : 'transparent',
+                px: 1,
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
+            >
+              Teams
+            </Typography>
+          </Box>
+          <IconButton color="inherit" onClick={toggleDarkMode} aria-label="Toggle dark mode">
+            {darkMode ? <LightMode /> : <DarkMode />}
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <Container component="main" sx={{ flexGrow: 1, py: 2 }}>{children}</Container>
+      <Box component="footer" sx={{ mt: 4, py: 3, backgroundColor: '#001F3F', color: 'white' }}>
+        <Container>
+          <Typography variant="body2" align="center" sx={{ opacity: 0.8 }}>
             &copy; {new Date().getFullYear()} UPA Summer Championships. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+          </Typography>
+        </Container>
+      </Box>
+    </Box>
   );
 }
