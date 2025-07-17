@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['your-supabase-url.supabase.co'], // Replace with your Supabase URL
+    domains: ['qwpxsufrgigpjcxtnery.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'qwpxsufrgigpjcxtnery.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/sign/team-logos/**',
+      },
+    ],
   },
   experimental: {
     serverActions: {

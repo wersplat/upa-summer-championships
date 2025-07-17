@@ -148,86 +148,96 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
   }
 }
 
-export default async function TeamPage({ params }: { params: { id: string } }) {
-  // Ensure we have the id before proceeding
-  if (!params?.id) {
-    notFound();
-  }
-  
-  // Fetch team data inside the page component
-  const team = await getTeamData(params.id);
+interface PageProps {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
-  if (!team) {
-    notFound();
-  }
+export default async function TeamPage({ params }: PageProps) {
+  try {
+    // Ensure we have the id before proceeding
+    if (!params?.id) {
+      notFound();
+    }
+    
+    // Fetch team data inside the page component
+    const team = await getTeamData(params.id);
 
-  // Format team stats for the TeamStats component
-  const teamStats = {
-    ...team,
-    team_stats: {
-      games_played: team.stats.games_played,
-      wins: team.stats.wins,
-      losses: team.stats.losses,
-      draws: 0, // This would come from your data if you track draws
-      goals_for: 0, // Update if you track goals
-      goals_against: 0, // Update if you track goals against
-      current_streak: 0, // Update if you track streaks
-      form_last_5: [] // Update if you track form
-    },
-    // Add RP and ELO info if available
-    team_rp: team.current_rp || 0,
-    team_elo_rating: team.elo_rating || 1500,
-    region: team.regions?.[0] // Ensure region is properly passed
-  };
+    if (!team) {
+      notFound();
+    }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <TeamHeader team={team} />
-        
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <RosterTable players={team.players} />
-            <MatchHistory matches={team.recent_matches} teamId={team.id} />
-          </div>
+    // Format team stats for the TeamStats component
+    const teamStats = {
+      ...team,
+      team_stats: {
+        games_played: team.stats.games_played,
+        wins: team.stats.wins,
+        losses: team.stats.losses,
+        draws: 0, // This would come from your data if you track draws
+        goals_for: 0, // Update if you track goals
+        goals_against: 0, // Update if you track goals against
+        current_streak: 0, // Update if you track streaks
+        form_last_5: [] // Update if you track form
+      },
+      // Add RP and ELO info if available
+      team_rp: team.current_rp || 0,
+      team_elo_rating: team.elo_rating || 1500,
+      region: team.regions?.[0] // Ensure region is properly passed
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <TeamHeader team={team} />
           
-          <div className="lg:col-span-1 space-y-6">
-            {/* Additional Team Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Team Details</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Region:</span>
-                  <span className="font-medium">{team.regions?.[0]?.name || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">ELO Rating:</span>
-                  <span className="font-medium">{team.elo_rating?.toFixed(0) || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Ranking Points:</span>
-                  <span className="font-medium">{team.current_rp || 0}</span>
-                </div>
-                {team.global_rank && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Global Rank:</span>
-                    <span className="font-medium">#{team.global_rank}</span>
-                  </div>
-                )}
-                {team.leaderboard_tier && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Tier:</span>
-                    <span className="font-medium">{team.leaderboard_tier}</span>
-                  </div>
-                )}
-              </div>
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <RosterTable players={team.players} />
+              <MatchHistory matches={team.recent_matches} teamId={team.id} />
             </div>
             
-            {/* Team Stats */}
-            <TeamStats team={teamStats} />
+            <div className="lg:col-span-1 space-y-6">
+              {/* Additional Team Info */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Team Details</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Region:</span>
+                    <span className="font-medium">{team.regions?.[0]?.name || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">ELO Rating:</span>
+                    <span className="font-medium">{team.elo_rating?.toFixed(0) || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 dark:text-gray-400">Ranking Points:</span>
+                    <span className="font-medium">{team.current_rp || 0}</span>
+                  </div>
+                  {team.global_rank && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">Global Rank:</span>
+                      <span className="font-medium">#{team.global_rank}</span>
+                    </div>
+                  )}
+                  {team.leaderboard_tier && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500 dark:text-gray-400">Tier:</span>
+                      <span className="font-medium">{team.leaderboard_tier}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Team Stats */}
+              <TeamStats team={teamStats} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error in TeamPage:', error);
+    notFound();
+  }
 }
