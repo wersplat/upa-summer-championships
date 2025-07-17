@@ -1,33 +1,24 @@
 import Image from 'next/image';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export default function LoadingSpinner() {
   return (
-    <div className="fixed inset-0 bg-white dark:bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-      <div className="text-center">
-        <div className="w-24 h-24 mx-auto mb-4 relative">
-          <div className="absolute inset-0 rounded-full border-4 border-indigo-200 dark:border-indigo-800"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 relative">
-              <div className="absolute inset-0 animate-spin">
-                <div className="h-full w-full border-4 border-indigo-500 dark:border-indigo-400 rounded-full"></div>
-              </div>
-              <div className="absolute inset-2 flex items-center justify-center">
-                <div className="relative w-12 h-12">
-                  <Image
-                    src="/logo.png"
-                    alt="UPA Logo"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p className="text-lg font-medium text-gray-900 dark:text-white">Loading team data...</p>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This may take a moment</p>
-      </div>
-    </div>
+    <Backdrop open sx={{ zIndex: 1300, color: '#fff' }}>
+      <Box textAlign="center">
+        <CircularProgress color="inherit" sx={{ mb: 2 }} />
+        <Box position="relative" width={48} height={48} mx="auto" mb={1}>
+          <Image src="/logo.png" alt="UPA Logo" fill style={{ objectFit: 'contain' }} priority />
+        </Box>
+        <Typography variant="h6" component="p">
+          Loading team data...
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.7 }}>
+          This may take a moment
+        </Typography>
+      </Box>
+    </Backdrop>
   );
 }
