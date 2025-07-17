@@ -88,40 +88,129 @@ export default function RosterTable({ players }: RosterTableProps) {
   const getStatusBadge = (player: Player) => {
     const rosterInfo = player.team_rosters?.[0];
     if (!rosterInfo) return null;
+    
     const badges: React.ReactNode[] = [];
+    
     if (rosterInfo.is_captain) {
-      badges.push(<Chip key="captain" label="Captain" size="small" color="warning" sx={{ mr: 0.5 }} />);
+      badges.push(
+        <Chip 
+          key="captain" 
+          label="Captain" 
+          size="small" 
+          sx={{ 
+            mr: 0.5,
+            bgcolor: 'warning.main',
+            color: 'warning.contrastText',
+            '& .MuiChip-label': {
+              px: 1,
+              py: 0.5,
+              fontWeight: 500,
+            },
+            boxShadow: 1,
+          }} 
+        />
+      );
     }
+    
     if (rosterInfo.is_player_coach) {
-      badges.push(<Chip key="coach" label="Coach" size="small" color="secondary" sx={{ mr: 0.5 }} />);
+      badges.push(
+        <Chip 
+          key="coach" 
+          label="Coach" 
+          size="small" 
+          sx={{ 
+            mr: 0.5,
+            bgcolor: 'secondary.main',
+            color: 'secondary.contrastText',
+            '& .MuiChip-label': {
+              px: 1,
+              py: 0.5,
+              fontWeight: 500,
+            },
+            boxShadow: 1,
+          }} 
+        />
+      );
     }
+    
     if (badges.length === 0) {
-      badges.push(<Chip key="player" label="Player" size="small" sx={{ mr: 0.5 }} />);
+      badges.push(
+        <Chip 
+          key="player" 
+          label="Player" 
+          size="small" 
+          sx={{ 
+            mr: 0.5,
+            bgcolor: 'action.selected',
+            color: 'text.primary',
+            '& .MuiChip-label': {
+              px: 1,
+              py: 0.5,
+            },
+          }} 
+        />
+      );
     }
-    return <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>{badges}</Box>;
+    
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: 0.5,
+        '& .MuiChip-root': {
+          height: 'auto',
+          minHeight: 24,
+        }
+      }}>
+        {badges}
+      </Box>
+    );
   };
-        sortConfig.direction === 'asc' ? (
-          <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-          </svg>
-        ) : (
-          <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        )
-      ) : (
-        <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      )}
+  
+  const sortIcon = sortConfig ? (
+    sortConfig.direction === 'asc' ? (
+      <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    )
+  ) : (
+    <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+    </svg>
+  );
+
+  return (
+    <span>
+      {sortIcon}
     </span>
   );
 
   return (
-    <Paper sx={{ overflowX: 'auto' }}>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+    <Paper 
+      sx={{ 
+        overflowX: 'auto',
+        bgcolor: 'background.paper',
+        boxShadow: 1,
+        borderRadius: 1
+      }}
+    >
+      <Box sx={{ 
+        p: 2, 
+        borderBottom: 1, 
+        borderColor: 'divider', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'flex-start', sm: 'center' }, 
+        flexDirection: { xs: 'column', sm: 'row' }, 
+        gap: 2,
+        bgcolor: 'background.default'
+      }}>
         <div>
-          <Typography variant="h6">Team Roster</Typography>
+          <Typography variant="h6" color="text.primary">Team Roster</Typography>
           <Typography variant="body2" color="text.secondary">
             {players.length} {players.length === 1 ? 'player' : 'players'} on roster
           </Typography>
@@ -131,53 +220,129 @@ export default function RosterTable({ players }: RosterTableProps) {
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search players..."
           size="small"
+          variant="outlined"
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Search fontSize="small" />
+                <Search fontSize="small" color="action" />
               </InputAdornment>
             ),
+            sx: {
+              bgcolor: 'background.paper',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'divider',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'primary.main',
+              },
+            }
           }}
-          sx={{ width: { xs: '100%', sm: 250 } }}
+          sx={{ 
+            width: { xs: '100%', sm: 250 },
+            '& .MuiInputBase-input': {
+              color: 'text.primary',
+            },
+            '& .MuiInputLabel-root': {
+              color: 'text.secondary',
+            },
+          }}
         />
       </Box>
-      <Table size="small">
+      <Table size="small" sx={{ minWidth: 650 }}>
         <TableHead>
-          <TableRow>
-            <TableCell sortDirection={sortConfig.key === 'gamertag' ? sortConfig.direction : false}>
+          <TableRow sx={{ bgcolor: 'background.default' }}>
+            <TableCell sx={{ 
+              color: 'text.primary',
+              fontWeight: 600,
+              borderColor: 'divider'
+            }}>
               <TableSortLabel
                 active={sortConfig.key === 'gamertag'}
                 direction={sortConfig.direction}
                 onClick={() => requestSort('gamertag')}
+                sx={{ color: 'text.primary !important' }}
               >
                 Player
               </TableSortLabel>
             </TableCell>
-            <TableCell sortDirection={sortConfig.key === 'position' ? sortConfig.direction : false}>
+            <TableCell sx={{ 
+              color: 'text.primary',
+              fontWeight: 600,
+              borderColor: 'divider'
+            }}>
               <TableSortLabel
                 active={sortConfig.key === 'position'}
                 direction={sortConfig.direction}
                 onClick={() => requestSort('position')}
+                sx={{ color: 'text.primary !important' }}
               >
                 Position
               </TableSortLabel>
             </TableCell>
-            <TableCell>Status</TableCell>
+            <TableCell sx={{ 
+              color: 'text.primary',
+              fontWeight: 600,
+              borderColor: 'divider'
+            }}>
+              Status
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedAndFilteredPlayers.length > 0 ? (
             sortedAndFilteredPlayers.map((player) => (
-              <TableRow key={player.id} hover>
+              <TableRow 
+                key={player.id} 
+                hover 
+                sx={{ 
+                  '&:nth-of-type(odd)': {
+                    bgcolor: 'action.hover',
+                  },
+                  '&:hover': {
+                    bgcolor: 'action.selected',
+                  },
+                  '&:last-child td': {
+                    borderBottom: 0,
+                  },
+                  '& td': {
+                    borderColor: 'divider',
+                    color: 'text.primary',
+                  },
+                }}
+              >
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar src={player.avatar_url || undefined} sx={{ mr: 2 }}>
+                    <Avatar 
+                      src={player.avatar_url || undefined} 
+                      sx={{ 
+                        mr: 2,
+                        width: 32,
+                        height: 32,
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText'
+                      }}
+                    >
                       {player.avatar_url ? '' : player.gamertag.charAt(0).toUpperCase()}
                     </Avatar>
                     <Box>
-                      <Typography variant="body2" fontWeight={500}>{player.gamertag}</Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 500,
+                          color: 'text.primary'
+                        }}
+                      >
+                        {player.gamertag}
+                      </Typography>
                       {(player.first_name || player.last_name) && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: 'text.secondary',
+                            lineHeight: 1.2,
+                            display: 'block'
+                          }}
+                        >
                           {player.first_name} {player.last_name}
                         </Typography>
                       )}
@@ -185,7 +350,21 @@ export default function RosterTable({ players }: RosterTableProps) {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  {player.position ? <Chip label={player.position} size="small" /> : <Typography variant="body2" color="text.secondary">-</Typography>}
+                  {player.position ? (
+                    <Chip 
+                      label={player.position} 
+                      size="small" 
+                      sx={{
+                        bgcolor: 'primary.light',
+                        color: 'primary.contrastText',
+                        '& .MuiChip-label': {
+                          px: 1,
+                        },
+                      }}
+                    />
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">-</Typography>
+                  )}
                 </TableCell>
                 <TableCell>{getStatusBadge(player)}</TableCell>
               </TableRow>

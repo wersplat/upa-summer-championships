@@ -97,27 +97,33 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       `)
       .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
       .order('played_at', { ascending: false })
-      .limit(5)
-      .returns<Match[]>();
+      .limit(5);
 
     if (matchesError) throw matchesError;
 
+    // Process matches to handle array responses from Supabase
+    const processedMatches = (matchesData || []).map(match => ({
+      ...match,
+      team_a: Array.isArray(match.team_a) ? match.team_a[0] : match.team_a,
+      team_b: Array.isArray(match.team_b) ? match.team_b[0] : match.team_b
+    }));
+
     // Calculate team stats
-    const gamesPlayed = matchesData?.length || 0;
-    const wins = matchesData?.filter(match => {
+    const gamesPlayed = processedMatches?.length || 0;
+    const wins = processedMatches?.filter(match => {
       const scoreA = match.score_a ?? 0;
       const scoreB = match.score_b ?? 0;
       return (match.team_a_id === teamData.id && scoreA > scoreB) ||
              (match.team_b_id === teamData.id && scoreB > scoreA);
     }).length || 0;
     
-    const totalPointsFor = matchesData?.reduce((sum, match) => {
+    const totalPointsFor = processedMatches?.reduce((sum, match) => {
       return match.team_a_id === teamData.id
         ? sum + (match.score_a || 0)
         : sum + (match.score_b || 0);
     }, 0) || 0;
 
-    const totalPointsAgainst = matchesData?.reduce((sum, match) => {
+    const totalPointsAgainst = processedMatches?.reduce((sum, match) => {
       return match.team_a_id === teamData.id
         ? sum + (match.score_b || 0)
         : sum + (match.score_a || 0);
@@ -128,7 +134,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
 
     return {
       ...teamData,
-      players: rosterData.map(roster => ({
+      players: (rosterData || []).map(roster => ({
         ...roster.players,
         team_rosters: [{
           id: roster.id,
@@ -141,14 +147,13 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
           event_id: roster.event_id || null
         }]
       })),
-      recent_matches: matchesData || [],
+      recent_matches: processedMatches || [],
       stats: {
         games_played: gamesPlayed,
-        avg_points: avgPoints,
-        avg_points_against: avgPointsAgainst,
-        wins: wins,
-        losses: gamesPlayed - wins
-      }
+        avg_points: gamesPlayed > 0 ? totalPointsFor / gamesPlayed : 0,
+        wins,
+        losses: gamesPlayed - wins,
+      },
     };
   } catch (error) {
     console.error('Error fetching team data:', error);
@@ -157,14 +162,15 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
 }
 
 export default async function TeamPage({ params }: { params: { id: string } }) {
-  // In Next.js 15, params is already properly typed and available
-  const { id } = params;
+  // First validate the params before any async operations
+  const id = params?.id;
+  
+  // Ensure we have the id before proceeding
+  if (!id) {
+    notFound();
+  }
   
   try {
-    // Ensure we have the id before proceeding
-    if (!id) {
-      notFound();
-    }
     
     // Fetch team data inside the page component
     const team = await getTeamData(id);

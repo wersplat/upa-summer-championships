@@ -4,23 +4,25 @@ import { format } from 'date-fns';
 
 interface MatchWithTeams {
   id: string;
-  team_a?: { id: string; name: string; logo_url: string | null };
-  team_b?: { id: string; name: string; logo_url: string | null };
-  score_a?: number | null;
-  score_b?: number | null;
-  played_at?: string | null;
-  status?: string | null;
+  team_a_id: string | null;
+  team_b_id: string | null;
+  team_a: { id: string; name: string; logo_url: string | null } | null;
+  team_b: { id: string; name: string; logo_url: string | null } | null;
+  score_a: number | null;
+  score_b: number | null;
+  played_at: string | null;
 }
 
 async function getRecentMatches(): Promise<MatchWithTeams[]> {
   const { data, error } = await supabase
     .from('matches')
     .select(
-      `id, team_a_id, team_b_id, score_a, score_b, played_at, status,
+      `id, team_a_id, team_b_id, score_a, score_b, played_at,
        team_a:team_a_id (id, name, logo_url),
        team_b:team_b_id (id, name, logo_url)`
     )
-    .eq('status', 'completed')
+    .not('score_a', 'is', null)
+    .not('score_b', 'is', null)
     .order('played_at', { ascending: false })
     .limit(5);
 
@@ -28,18 +30,25 @@ async function getRecentMatches(): Promise<MatchWithTeams[]> {
     console.error('Error fetching recent matches', error);
     return [];
   }
-  return data || [];
+
+  // Map the response to MatchWithTeams interface
+  return (data || []).map(match => ({
+    ...match,
+    team_a: match.team_a?.[0] || null,
+    team_b: match.team_b?.[0] || null
+  }));
 }
 
 async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
   const { data, error } = await supabase
     .from('matches')
     .select(
-      `id, team_a_id, team_b_id, score_a, score_b, played_at, status,
+      `id, team_a_id, team_b_id, score_a, score_b, played_at,
        team_a:team_a_id (id, name, logo_url),
        team_b:team_b_id (id, name, logo_url)`
     )
-    .eq('status', 'scheduled')
+    .is('score_a', null)
+    .is('score_b', null)
     .order('played_at', { ascending: true })
     .limit(5);
 
@@ -47,7 +56,13 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
     console.error('Error fetching upcoming matches', error);
     return [];
   }
-  return data || [];
+
+  // Map the response to MatchWithTeams interface
+  return (data || []).map(match => ({
+    ...match,
+    team_a: match.team_a?.[0] || null,
+    team_b: match.team_b?.[0] || null
+  }));
 }
 
 export default async function Home() {
