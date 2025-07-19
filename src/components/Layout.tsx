@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Typography component={Link} href="/" variant="h6" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
             UPA Summer Championships
           </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'block' }, mr: 2 }}>
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2, mr: 2 }}>
             <Typography
               component={Link}
               href="/teams"
@@ -38,6 +38,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               }}
             >
               Teams
+            </Typography>
+            <Typography
+              component={Link}
+              href="/players"
+              sx={{
+                color: pathname === '/players' || pathname.startsWith('/players/') ? 'secondary.main' : 'inherit',
+                textDecoration: 'none',
+                borderBottom: 2,
+                borderColor: pathname === '/players' || pathname.startsWith('/players/') ? 'secondary.main' : 'transparent',
+                px: 1,
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
+            >
+              Players
             </Typography>
           </Box>
           <IconButton color="inherit" onClick={toggleColorMode} aria-label="Toggle dark mode">
