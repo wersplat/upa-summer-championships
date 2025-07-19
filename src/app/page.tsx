@@ -210,6 +210,138 @@ export default async function Home() {
         </Typography>
       </Box>
 
+      {/* ELO Rating Explanation Section */}
+      <Paper 
+        sx={{ 
+          p: 4, 
+          mb: 6, 
+          background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 'bold', 
+              color: 'primary.main',
+              mb: 2
+            }}
+          >
+            Understanding ELO Ratings
+          </Typography>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: 'text.secondary',
+              fontStyle: 'italic'
+            }}
+          >
+            How we rank teams in the UPA Summer Championships
+          </Typography>
+        </Box>
+        
+        <Grid container spacing={4} alignItems="center">
+          <Grid item xs={12} md={8}>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.7 }}>
+              <strong>ELO rating</strong> is a dynamic ranking system that measures the relative skill levels of teams. 
+              Originally developed for chess, it's now widely used in competitive gaming and sports.
+            </Typography>
+            
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.7 }}>
+              <strong>How it works:</strong> Teams start with a base rating (typically 1500). When teams compete, 
+              the winner gains ELO points while the loser loses points. The amount gained or lost depends on:
+            </Typography>
+            
+            <Box component="ul" sx={{ pl: 3, mb: 2 }}>
+              <Typography component="li" variant="body1" sx={{ mb: 1 }}>
+                <strong>Rating difference:</strong> Beating a higher-rated team gives more points
+              </Typography>
+              <Typography component="li" variant="body1" sx={{ mb: 1 }}>
+                <strong>Match importance:</strong> Tournament games may have higher stakes
+              </Typography>
+              <Typography component="li" variant="body1">
+                <strong>Score margin:</strong> Decisive victories can yield bonus points
+              </Typography>
+            </Box>
+            
+            <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+              This creates a <strong>fair and accurate ranking system</strong> where teams are rewarded for 
+              consistent performance against quality opponents.
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Paper 
+                sx={{ 
+                  p: 3, 
+                  bgcolor: 'primary.main', 
+                  color: 'primary.contrastText',
+                  mb: 2
+                }}
+              >
+                <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  1500
+                </Typography>
+                <Typography variant="body2">
+                  Starting ELO Rating
+                </Typography>
+              </Paper>
+              
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  bgcolor: 'success.light', 
+                  color: 'success.contrastText',
+                  mb: 1
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  1800+
+                </Typography>
+                <Typography variant="body2">
+                  Elite Teams
+                </Typography>
+              </Paper>
+              
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  bgcolor: 'warning.light', 
+                  color: 'warning.contrastText',
+                  mb: 1
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  1600-1799
+                </Typography>
+                <Typography variant="body2">
+                  Strong Teams
+                </Typography>
+              </Paper>
+              
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  bgcolor: 'info.light', 
+                  color: 'info.contrastText'
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  1400-1599
+                </Typography>
+                <Typography variant="body2">
+                  Developing Teams
+                </Typography>
+              </Paper>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
       {/* Teams Section */}
       <Box sx={{ mb: 6 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
