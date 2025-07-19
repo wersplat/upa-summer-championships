@@ -43,7 +43,7 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
-  const positions = ['PG', 'SG', 'Lock (LCK)', 'PF', 'C'];
+  const positions = ['Point Guard', 'Shooting Guard', 'Lock', 'Power Forward', 'Center'];
 
   const filteredPlayers = useMemo(() => {
     return players.filter(player => {
@@ -109,11 +109,11 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
     if (!position) return 'default';
     
     const positionMap: Record<string, PositionColorType> = {
-      'PG': 'primary',
-      'SG': 'secondary',
-      'Lock (LCK)': 'success',
-      'PF': 'warning',
-      'C': 'error',
+      'Point Guard': 'primary',
+      'Shooting Guard': 'secondary',
+      'Lock': 'success',
+      'Power Forward': 'warning',
+      'Center': 'error',
     };
     
     return positionMap[position] || 'default';
