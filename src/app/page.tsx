@@ -13,7 +13,7 @@ import {
   Button,
   Paper,
 } from '@mui/material';
-import { Team } from '@/utils/supabase';
+// Remove unused Team import
 
 interface MatchWithTeams {
   id: string;
@@ -26,11 +26,20 @@ interface MatchWithTeams {
   played_at: string | null;
 }
 
-interface TeamWithRegion extends Team {
+interface TeamWithRegion {
   regions: Array<{
     id: string;
     name: string;
   }>;
+  id: string;
+  name: string;
+  logo_url: string | null;
+  region_id: string | null;
+  current_rp: number | null;
+  elo_rating?: number | null;
+  global_rank: number | null;
+  leaderboard_tier: string | null;
+  created_at: string;
 }
 
 interface PlayerWithRoster {
@@ -108,8 +117,20 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
   }));
 }
 
-async function getTopTeams(): Promise<TeamWithRegion[]> {
+// Extend the base TeamWithRegion but omit elo_rating since we're not using it
+type TeamWithStats = Omit<TeamWithRegion, 'elo_rating'> & {
+  stats: {
+    wins: number;
+    losses: number;
+    points_for: number;
+    points_against: number;
+    points_differential: number;
+  };
+}
+
+async function getTopTeams(): Promise<TeamWithStats[]> {
   try {
+    // First, get the top teams by ELO rating
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -118,17 +139,69 @@ async function getTopTeams(): Promise<TeamWithRegion[]> {
         logo_url,
         region_id,
         current_rp,
-        elo_rating,
         global_rank,
         leaderboard_tier,
         created_at,
         regions (id, name)
       `)
-      .order('elo_rating', { ascending: false })
+      .order('current_rp', { ascending: false })
       .limit(6);
 
     if (error) throw error;
-    return teams || [];
+    if (!teams) return [];
+
+    // Get match data for all teams
+    const teamIds = teams.map(team => team.id);
+    const { data: matches } = await supabase
+      .from('matches')
+      .select('*')
+      .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`);
+
+    // Calculate stats for each team
+    const teamsWithStats = await Promise.all(teams.map(async (team) => {
+      const teamMatches = matches?.filter(match => 
+        match.team_a_id === team.id || match.team_b_id === team.id
+      ) || [];
+
+      let wins = 0;
+      let pointsFor = 0;
+      let pointsAgainst = 0;
+
+      teamMatches.forEach(match => {
+        const isTeamA = match.team_a_id === team.id;
+        const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
+        const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
+        
+        pointsFor += teamScore;
+        pointsAgainst += opponentScore;
+        
+        if (teamScore > opponentScore) {
+          wins++;
+        }
+      });
+
+      const losses = teamMatches.length - wins;
+      const pointsDifferential = pointsFor - pointsAgainst;
+
+      return {
+        ...team,
+        stats: {
+          wins,
+          losses,
+          points_for: pointsFor,
+          points_against: pointsAgainst,
+          points_differential: pointsDifferential
+        }
+      };
+    }));
+
+    // Sort by wins, then point differential
+    return teamsWithStats.sort((a, b) => {
+      if (a.stats.wins !== b.stats.wins) {
+        return b.stats.wins - a.stats.wins;
+      }
+      return b.stats.points_differential - a.stats.points_differential;
+    });
   } catch (error) {
     console.error('Error fetching teams:', error);
     return [];
@@ -432,21 +505,33 @@ export default async function Home() {
                       />
                     )}
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        ELO Rating
+                        Record
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                        {team.elo_rating || 'N/A'}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
+                          {team.stats?.wins || 0}
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">-</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
+                          {team.stats?.losses || 0}
+                        </Typography>
+                      </Box>
                     </Box>
                     <Box sx={{ textAlign: 'right' }}>
                       <Typography variant="body2" color="text.secondary">
-                        Current RP
+                        Point Diff
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                        {team.current_rp || 0}
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: (team.stats?.points_differential || 0) >= 0 ? 'success.main' : 'error.main' 
+                        }}
+                      >
+                        {(team.stats?.points_differential || 0) > 0 ? '+' : ''}{team.stats?.points_differential || 0}
                       </Typography>
                     </Box>
                   </Box>
