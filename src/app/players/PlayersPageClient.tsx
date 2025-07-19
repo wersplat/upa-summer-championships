@@ -51,7 +51,7 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
         player.teams?.some(team => team.name.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesPosition = positionFilter === 'all' || 
-        (player.position && player.position.includes(positionFilter));
+        (player.position && player.position === positionFilter);
       
       return matchesSearch && matchesPosition;
     });
