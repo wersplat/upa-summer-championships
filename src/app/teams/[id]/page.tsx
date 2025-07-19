@@ -52,6 +52,9 @@ interface TeamWithRoster extends Team {
     avg_points: number;
     wins: number;
     losses: number;
+    points_for: number;
+    points_against: number;
+    points_differential: number;
   };
   regions?: Array<{
     id: string;
@@ -173,18 +176,24 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
 
     // Calculate team stats
     const gamesPlayed = processedMatches?.length || 0;
-    const wins = processedMatches?.filter(match => {
-      const scoreA = match.score_a ?? 0;
-      const scoreB = match.score_b ?? 0;
-      return (match.team_a_id === teamData.id && scoreA > scoreB) ||
-             (match.team_b_id === teamData.id && scoreB > scoreA);
-    }).length || 0;
+    let wins = 0;
+    let pointsFor = 0;
+    let pointsAgainst = 0;
     
-    const totalPointsFor = processedMatches?.reduce((sum, match) => {
-      return match.team_a_id === teamData.id
-        ? sum + (match.score_a || 0)
-        : sum + (match.score_b || 0);
-    }, 0) || 0;
+    processedMatches?.forEach(match => {
+      const isTeamA = match.team_a_id === teamData.id;
+      const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
+      const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
+      
+      pointsFor += teamScore;
+      pointsAgainst += opponentScore;
+      
+      if (teamScore > opponentScore) {
+        wins++;
+      }
+    });
+    
+    const pointsDifferential = pointsFor - pointsAgainst;
 
 
 
@@ -208,9 +217,12 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       recent_matches: processedMatches || [],
       stats: {
         games_played: gamesPlayed,
-        avg_points: gamesPlayed > 0 ? totalPointsFor / gamesPlayed : 0,
+        avg_points: gamesPlayed > 0 ? pointsFor / gamesPlayed : 0,
         wins,
         losses: gamesPlayed - wins,
+        points_for: pointsFor,
+        points_against: pointsAgainst,
+        points_differential: pointsDifferential,
       },
     };
   } catch (error) {
@@ -332,18 +344,18 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                   <Grid item xs={6} sm={3}>
                     <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <EmojiEvents sx={{ fontSize: 32, mb: 1, color: 'warning.main' }} />
-                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                        {team.elo_rating?.toFixed(0) || 'N/A'}
+                      <TrendingUp sx={{ fontSize: 32, mb: 1, color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main' }} />
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main' }}>
+                        {team.stats.points_differential > 0 ? `+${team.stats.points_differential}` : team.stats.points_differential}
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                        ELO Rating
+                        Point Diff
                       </Typography>
                     </Paper>
                   </Grid>
                   <Grid item xs={6} sm={3}>
                     <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <TrendingUp sx={{ fontSize: 32, mb: 1, color: 'secondary.main' }} />
+                      <EmojiEvents sx={{ fontSize: 32, mb: 1, color: 'warning.main' }} />
                       <Typography variant="h5" sx={{ fontWeight: 600 }}>
                         {team.current_rp || 0}
                       </Typography>
@@ -354,8 +366,8 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                   </Grid>
                   <Grid item xs={6} sm={3}>
                     <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <Groups sx={{ fontSize: 32, mb: 1, color: 'info.main' }} />
-                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                      <Groups sx={{ fontSize: 32, mb: 1, color: 'success.main' }} />
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.main' }}>
                         {team.stats.wins}
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>

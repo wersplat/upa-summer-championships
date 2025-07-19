@@ -210,7 +210,7 @@ export default async function Home() {
         </Typography>
       </Box>
 
-      {/* ELO Rating Explanation Section */}
+      {/* Tournament Standings Explanation Section */}
       <Paper 
         sx={{ 
           p: 3, 
@@ -220,11 +220,11 @@ export default async function Home() {
           borderColor: 'divider'
         }}
         role="region"
-        aria-labelledby="elo-rating-title"
+        aria-labelledby="standings-title"
       >
         <Box sx={{ textAlign: 'center', mb: 2 }}>
           <Typography 
-            id="elo-rating-title"
+            id="standings-title"
             variant="h5" 
             component="h2" 
             sx={{ 
@@ -233,7 +233,7 @@ export default async function Home() {
               mb: 1
             }}
           >
-            ELO Rating System
+            Tournament Standings
           </Typography>
           <Typography 
             variant="body2" 
@@ -241,20 +241,20 @@ export default async function Home() {
               color: 'text.secondary'
             }}
           >
-            Dynamic skill-based team rankings
+            How teams are ranked in the championship
           </Typography>
         </Box>
         
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={7}>
             <Typography variant="body2" sx={{ mb: 1.5, color: 'text.primary' }}>
-              Teams start at <strong>1500 ELO</strong>. Winners gain points, losers lose points. 
-              Beating higher-rated teams earns more points than beating lower-rated teams.
+              Teams are ranked by <strong>wins</strong>, then by <strong>points differential</strong> (total points scored minus points allowed). 
+              Higher win percentage and positive point differential indicate stronger performance.
             </Typography>
             
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Chip 
-                label="Fair Rankings" 
+                label="Wins First" 
                 size="small" 
                 sx={{ 
                   bgcolor: 'primary.main', 
@@ -263,7 +263,7 @@ export default async function Home() {
                 }}
               />
               <Chip 
-                label="Skill-Based" 
+                label="Point Differential" 
                 size="small" 
                 sx={{ 
                   bgcolor: 'secondary.main', 
@@ -272,7 +272,7 @@ export default async function Home() {
                 }}
               />
               <Chip 
-                label="Dynamic Updates" 
+                label="Clear Rankings" 
                 size="small" 
                 sx={{ 
                   bgcolor: 'success.main', 
@@ -289,7 +289,7 @@ export default async function Home() {
                 sx={{ 
                   textAlign: 'center',
                   p: 1.5,
-                  minWidth: 80,
+                  minWidth: 90,
                   bgcolor: 'success.dark',
                   color: 'success.contrastText',
                   borderRadius: 1,
@@ -297,13 +297,13 @@ export default async function Home() {
                   borderColor: 'success.main'
                 }}
                 role="img"
-                aria-label="Elite teams rating range"
+                aria-label="Wins statistic"
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  1800+
+                  WINS
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Elite
+                  Primary Rank
                 </Typography>
               </Box>
               
@@ -311,7 +311,7 @@ export default async function Home() {
                 sx={{ 
                   textAlign: 'center',
                   p: 1.5,
-                  minWidth: 80,
+                  minWidth: 90,
                   bgcolor: 'warning.dark',
                   color: 'warning.contrastText',
                   borderRadius: 1,
@@ -319,13 +319,13 @@ export default async function Home() {
                   borderColor: 'warning.main'
                 }}
                 role="img"
-                aria-label="Strong teams rating range"
+                aria-label="Losses statistic"
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  1600-1799
+                  LOSSES
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Strong
+                  Record
                 </Typography>
               </Box>
               
@@ -333,7 +333,7 @@ export default async function Home() {
                 sx={{ 
                   textAlign: 'center',
                   p: 1.5,
-                  minWidth: 80,
+                  minWidth: 90,
                   bgcolor: 'info.dark',
                   color: 'info.contrastText',
                   borderRadius: 1,
@@ -341,13 +341,13 @@ export default async function Home() {
                   borderColor: 'info.main'
                 }}
                 role="img"
-                aria-label="Developing teams rating range"
+                aria-label="Points differential statistic"
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  1400-1599
+                  +/- DIFF
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Developing
+                  Tiebreaker
                 </Typography>
               </Box>
             </Box>

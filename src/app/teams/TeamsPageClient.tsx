@@ -41,7 +41,7 @@ interface TeamWithRegion {
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'elo' | 'rp' | 'rank' | 'name'>('elo');
+  const [sortBy, setSortBy] = useState<'wins' | 'rp' | 'rank' | 'name'>('wins');
   const [filterRegion, setFilterRegion] = useState<string>('all');
 
   // Get unique regions for filter
@@ -120,13 +120,13 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
               <Paper sx={{ p: 3, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
                 <EmojiEvents sx={{ fontSize: 40, mb: 1, color: 'warning.main' }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Top ELO Team
+                  Best Record
                 </Typography>
                 <Typography variant="body1">
                   {topTeams.highest_elo?.name || 'N/A'}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                  {topTeams.highest_elo?.elo_rating?.toFixed(0) || 'N/A'} ELO
+                  Top Win %
                 </Typography>
               </Paper>
             </Grid>
@@ -198,7 +198,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                   label="Sort by"
                   onChange={(e) => setSortBy(e.target.value as 'elo' | 'rp' | 'rank' | 'name')}
                 >
-                  <MenuItem value="elo">ELO Rating</MenuItem>
+                  <MenuItem value="wins">Win Record</MenuItem>
                   <MenuItem value="rp">Ranking Points</MenuItem>
                   <MenuItem value="rank">Global Rank</MenuItem>
                   <MenuItem value="name">Team Name</MenuItem>
@@ -316,20 +316,20 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                       <Grid item xs={6}>
                         <Box sx={{ textAlign: 'center', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
                           <Typography variant="caption" color="text.secondary" display="block">
-                            ELO Rating
+                            Record
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            {team.elo_rating?.toFixed(0) || 'N/A'}
+                            W-L
                           </Typography>
                         </Box>
                       </Grid>
                       <Grid item xs={6}>
                         <Box sx={{ textAlign: 'center', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
                           <Typography variant="caption" color="text.secondary" display="block">
-                            Ranking Points
+                            Point Diff
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main' }}>
-                            {team.current_rp || 0}
+                            +/-
                           </Typography>
                         </Box>
                       </Grid>
