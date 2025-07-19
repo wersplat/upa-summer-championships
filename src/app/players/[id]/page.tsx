@@ -71,23 +71,29 @@ async function getPlayerData(id: string): Promise<PlayerWithTeam | null> {
     // Get player basic info
     const { data: player, error } = await supabase
       .from('players')
-      .select(`
-        *,
-        teams:team_rosters(
-          team_id,
-          teams(
-            id,
-            name,
-            logo_url
-          )
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error || !player) {
       console.error('Error fetching player:', error);
       return null;
+    }
+
+    // Get team info using current_team_id
+    let teams: Team[] = [];
+    if (player.current_team_id) {
+      const { data: teamData, error: teamError } = await supabase
+        .from('teams')
+        .select('id, name, logo_url')
+        .eq('id', player.current_team_id)
+        .single();
+      
+      if (!teamError && teamData) {
+        teams = [teamData];
+      } else {
+        console.error('Error fetching team:', teamError);
+      }
     }
 
     // Get player stats (this is a simplified example - adjust based on your actual stats table structure)
@@ -97,8 +103,9 @@ async function getPlayerData(id: string): Promise<PlayerWithTeam | null> {
       .eq('player_id', id)
       .single();
 
-    return {
+return {
       ...player,
+      teams: teams,
       stats: stats ? {
         games_played: stats.games_played || 0,
         points_per_game: stats.points_per_game || 0,

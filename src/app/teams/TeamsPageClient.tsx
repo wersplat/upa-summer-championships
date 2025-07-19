@@ -232,7 +232,9 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
 
         {/* Teams Grid */}
         <Grid container spacing={3}>
-          {filteredAndSortedTeams.map((team) => (
+          {filteredAndSortedTeams
+            .filter(team => team?.id) // Only render teams with valid IDs
+            .map((team) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={team.id}>
               <Card 
                 component={Link} 
