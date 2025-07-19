@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardHeader,
@@ -40,8 +41,14 @@ interface TeamWithRegion {
 }
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
+  const router = useRouter();
+  
+  // Prefetch team data on hover
+  const handleTeamHover = useCallback((teamId: string) => {
+    router.prefetch(`/teams/${teamId}`);
+  }, [router]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'wins' | 'rp' | 'rank' | 'name'>('wins');
+  const [sortBy, setSortBy] = useState<'elo' | 'rp' | 'rank' | 'name'>('elo');
   const [filterRegion, setFilterRegion] = useState<string>('all');
 
   // Get unique regions for filter
@@ -230,6 +237,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
               <Card 
                 component={Link} 
                 href={`/teams/${team.id}`}
+                onMouseEnter={() => handleTeamHover(team.id)}
                 sx={{ 
                   height: '100%',
                   textDecoration: 'none',

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -22,20 +23,98 @@ import {
   FormControl,
   InputLabel,
   TablePagination,
+  Button
 } from '@mui/material';
 import { Search, SportsBasketball } from '@mui/icons-material';
-import type { PlayerWithTeam } from './page';
+// Define basic player stats type since we can't import it
+interface PlayerStats {
+  games_played: number;
+  points_per_game: number;
+  assists_per_game: number;
+  rebounds_per_game: number;
+  steals_per_game: number;
+  blocks_per_game: number;
+  field_goal_percentage: number;
+  three_point_percentage: number;
+  free_throw_percentage: number;
+  minutes_per_game: number;
+  turnovers_per_game: number;
+  fouls_per_game: number;
+  plus_minus: number;
+  [key: string]: number; // Allow dynamic access
+}
+
+// Define all possible value types in Player
+type PlayerValue = 
+  | string 
+  | number 
+  | boolean 
+  | TeamInfo[] 
+  | PlayerStats 
+  | undefined 
+  | null;
+
+interface Player {
+  // Required properties
+  id: string;
+  gamertag: string;
+  performance_score: number;
+  player_rp: number;
+  player_rank_score: number;
+  monthly_value: number;
+  created_at: string;
+  
+  // Optional properties with specific types
+  teams?: TeamInfo[];
+  stats?: PlayerStats;
+  position?: string;
+  height?: string;
+  weight?: string;
+  age?: number;
+  
+  // Index signature for dynamic access with all possible value types
+  [key: string]: PlayerValue;
+}
+
+// Define the team interface
+type TeamInfo = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+};
+
+// Define the player with team and stats interface
+type PlayerWithTeam = Player & {
+  avatar_url?: string | null;
+  teams?: TeamInfo[];
+  stats?: PlayerStats;
+};
 
 // Fix for the getPositionColor function type issue
 type PositionColorType = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default';
 
-interface PlayersPageClientProps {
+type PlayersPageClientProps = {
   players: PlayerWithTeam[];
-}
+  showFallbackMessage?: boolean;
+};
 
-type SortField = 'rank' | 'name' | 'team' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'fg' | '3pt' | 'ft';
+type SortField = keyof PlayerWithTeam | 'team' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'fg_pct' | 'ft_pct' | '3p_pct' | 'tpg' | 'fpg' | 'mpg' | 'plus_minus' | 'performance_score';
 
-export default function PlayersPageClient({ players }: PlayersPageClientProps) {
+// This is a client component that renders the players page
+// It receives the players data from the server component
+const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPageClientProps) => {
+  const router = useRouter();
+  
+  const handleShowAllPlayers = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/players';
+    }
+  }, []);
+  
+  // Prefetch player data on hover
+  const handlePlayerHover = useCallback((playerId: string) => {
+    router.prefetch(`/players/${playerId}`);
+  }, [router]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -69,8 +148,9 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
           comparison = a.gamertag.localeCompare(b.gamertag);
           break;
         case 'team':
-          const teamA = a.teams?.[0]?.name || '';
-          const teamB = b.teams?.[0]?.name || '';
+          const getTeamLogo = (team?: TeamInfo) => team?.name || '';
+          const teamA = getTeamLogo(a.teams?.[0]);
+          const teamB = getTeamLogo(b.teams?.[0]);
           comparison = teamA.localeCompare(teamB);
           break;
         case 'ppg':
@@ -118,6 +198,27 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
     
     return positionMap[position] || 'default';
   };
+
+  if (showFallbackMessage) {
+    return (
+      <Box sx={{ width: '100%', p: 3, textAlign: 'center', mt: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          No players found for the current event
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          There are no players registered for this event yet.
+        </Typography>
+        <Button 
+          variant="contained" 
+          color="primary"
+          onClick={handleShowAllPlayers}
+          startIcon={<SportsBasketball />}
+        >
+          View All Players
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
@@ -228,7 +329,11 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
                         >
                           <SportsBasketball />
                         </Avatar>
-                        <Link href={`/players/${player.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <Link 
+                          href={`/players/${player.id}`} 
+                          style={{ textDecoration: 'none', color: 'inherit' }}
+                          onMouseEnter={() => handlePlayerHover(player.id)}
+                        >
                           <Typography variant="body2" sx={{ fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
                             {player.gamertag}
                           </Typography>
@@ -292,4 +397,6 @@ export default function PlayersPageClient({ players }: PlayersPageClientProps) {
       </Box>
     </Box>
   );
-}
+};
+
+export default PlayersPageClient;

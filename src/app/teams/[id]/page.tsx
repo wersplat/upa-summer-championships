@@ -232,8 +232,12 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
 }
 
 export default async function TeamPage({ params }: { params: { id: string } }) {
-  // First validate the params before any async operations
-  const id = params?.id;
+  // Ensure params is properly awaited
+  const { id } = await Promise.resolve(params);
+  
+  if (!id) {
+    notFound();
+  }
   
   // Ensure we have the id before proceeding
   if (!id) {

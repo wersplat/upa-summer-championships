@@ -1,7 +1,45 @@
 import { notFound } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
-import { Player, Team } from '@/utils/supabase';
-import PlayerProfile from '@/components/PlayerProfile';
+import type { Player } from '@/utils/supabase';
+import dynamic from 'next/dynamic';
+
+// Define the player stats interface
+interface PlayerStats {
+  games_played: number;
+  points_per_game: number;
+  assists_per_game: number;
+  rebounds_per_game: number;
+  steals_per_game: number;
+  blocks_per_game: number;
+  field_goal_percentage: number;
+  three_point_percentage: number;
+  free_throw_percentage: number;
+  minutes_per_game: number;
+  turnovers_per_game: number;
+  fouls_per_game: number;
+  plus_minus: number;
+}
+
+// Define the team interface
+interface Team {
+  id: string;
+  name: string;
+  logo_url: string | null;
+}
+
+// Define the player with team and stats interface
+interface PlayerWithTeam extends Player {
+  teams?: Team[];
+  stats?: PlayerStats;
+}
+
+// Dynamically import the PlayerProfile component with default import
+const PlayerProfile = dynamic<{ player: PlayerWithTeam }>(
+  () => import('@/components/PlayerProfile'),
+  {
+    loading: () => <div>Loading player profile...</div>,
+  }
+);
 
 export const revalidate = 30; // Revalidate data every 30 seconds
 
@@ -84,7 +122,9 @@ async function getPlayerData(id: string): Promise<PlayerWithTeam | null> {
 }
 
 export default async function PlayerPage({ params }: { params: { id: string } }) {
-  const player = await getPlayerData(params.id);
+  // Ensure params is properly awaited
+  const { id } = await Promise.resolve(params);
+  const player = await getPlayerData(id);
 
   if (!player) {
     notFound();

@@ -72,7 +72,7 @@ interface PlayerProfileProps {
   player: PlayerWithTeam;
 }
 
-export default function PlayerProfile({ player }: PlayerProfileProps) {
+function PlayerProfile({ player }: PlayerProfileProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [tabValue, setTabValue] = useState(0);
@@ -355,3 +355,5 @@ function getPositionColor(position: string) {
   
   return positionMap[position] || 'default';
 }
+
+export default PlayerProfile;
