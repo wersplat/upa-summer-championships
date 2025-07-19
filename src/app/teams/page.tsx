@@ -1,7 +1,7 @@
 import { supabase } from '@/utils/supabase';
 import TeamsPageClient from './TeamsPageClient';
 
-export const revalidate = 3600; // Revalidate data every hour
+export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
 interface TeamWithRegion {
   id: string;
