@@ -101,6 +101,8 @@ export default function RosterTable({ players }: RosterTableProps) {
             mr: 0.5,
             bgcolor: 'warning.main',
             color: 'warning.contrastText',
+            border: '1px solid',
+            borderColor: 'warning.dark',
             '& .MuiChip-label': {
               px: 1,
               py: 0.5,
@@ -122,6 +124,8 @@ export default function RosterTable({ players }: RosterTableProps) {
             mr: 0.5,
             bgcolor: 'secondary.main',
             color: 'secondary.contrastText',
+            border: '1px solid',
+            borderColor: 'secondary.dark',
             '& .MuiChip-label': {
               px: 1,
               py: 0.5,
@@ -141,8 +145,10 @@ export default function RosterTable({ players }: RosterTableProps) {
           size="small" 
           sx={{ 
             mr: 0.5,
-            bgcolor: 'action.selected',
+            bgcolor: 'grey.100',
             color: 'text.primary',
+            border: '1px solid',
+            borderColor: 'grey.300',
             '& .MuiChip-label': {
               px: 1,
               py: 0.5,
@@ -167,27 +173,7 @@ export default function RosterTable({ players }: RosterTableProps) {
     );
   };
   
-  const sortIcon = sortConfig ? (
-    sortConfig.direction === 'asc' ? (
-      <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-      </svg>
-    ) : (
-      <svg className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-  ) : (
-    <svg className="w-3.5 h-3.5 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-    </svg>
-  );
 
-  return (
-    <span>
-      {sortIcon}
-    </span>
-  );
 
   return (
     <Paper 
@@ -207,7 +193,7 @@ export default function RosterTable({ players }: RosterTableProps) {
         alignItems: { xs: 'flex-start', sm: 'center' }, 
         flexDirection: { xs: 'column', sm: 'row' }, 
         gap: 2,
-        bgcolor: 'background.default'
+        bgcolor: 'grey.50'
       }}>
         <div>
           <Typography variant="h6" color="text.primary">Team Roster</Typography>
@@ -250,7 +236,12 @@ export default function RosterTable({ players }: RosterTableProps) {
       </Box>
       <Table size="small" sx={{ minWidth: 650 }}>
         <TableHead>
-          <TableRow sx={{ bgcolor: 'background.default' }}>
+          <TableRow sx={{ 
+            bgcolor: 'grey.100',
+            '& .MuiTableCell-head': {
+              bgcolor: 'grey.100',
+            }
+          }}>
             <TableCell sx={{ 
               color: 'text.primary',
               fontWeight: 600,
@@ -296,10 +287,13 @@ export default function RosterTable({ players }: RosterTableProps) {
                 hover 
                 sx={{ 
                   '&:nth-of-type(odd)': {
-                    bgcolor: 'action.hover',
+                    bgcolor: 'grey.50',
                   },
                   '&:hover': {
-                    bgcolor: 'action.selected',
+                    bgcolor: 'primary.light',
+                    '& .MuiTableCell-root': {
+                      color: 'primary.contrastText',
+                    },
                   },
                   '&:last-child td': {
                     borderBottom: 0,
@@ -355,8 +349,10 @@ export default function RosterTable({ players }: RosterTableProps) {
                       label={player.position} 
                       size="small" 
                       sx={{
-                        bgcolor: 'primary.light',
+                        bgcolor: 'primary.main',
                         color: 'primary.contrastText',
+                        border: '1px solid',
+                        borderColor: 'primary.dark',
                         '& .MuiChip-label': {
                           px: 1,
                         },

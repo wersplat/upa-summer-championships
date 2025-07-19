@@ -1,6 +1,19 @@
 import { supabase } from '@/utils/supabase';
-import Image from 'next/image';
+import Link from 'next/link';
 import { format } from 'date-fns';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Avatar,
+  Chip,
+  Grid,
+  Typography,
+  Box,
+  Button,
+  Paper,
+} from '@mui/material';
+import { Team } from '@/utils/supabase';
 
 interface MatchWithTeams {
   id: string;
@@ -11,6 +24,36 @@ interface MatchWithTeams {
   score_a: number | null;
   score_b: number | null;
   played_at: string | null;
+}
+
+interface TeamWithRegion extends Team {
+  regions: Array<{
+    id: string;
+    name: string;
+  }>;
+}
+
+interface PlayerWithRoster {
+  id: string;
+  gamertag: string;
+  position?: string | null;
+  region_id?: string | null;
+  current_team_id?: string | null;
+  performance_score: number;
+  player_rp: number;
+  player_rank_score: number;
+  monthly_value: number;
+  created_at: string;
+  team_rosters?: Array<{
+    id: string;
+    team_id: string;
+    player_id: string;
+    is_captain: boolean;
+    is_player_coach: boolean;
+    joined_at: string;
+    left_at: string | null;
+    event_id: string | null;
+  }>;
 }
 
 async function getRecentMatches(): Promise<MatchWithTeams[]> {
@@ -65,165 +108,526 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
   }));
 }
 
+async function getTopTeams(): Promise<TeamWithRegion[]> {
+  try {
+    const { data: teams, error } = await supabase
+      .from('teams')
+      .select(`
+        id,
+        name,
+        logo_url,
+        region_id,
+        current_rp,
+        elo_rating,
+        global_rank,
+        leaderboard_tier,
+        created_at,
+        regions (id, name)
+      `)
+      .order('elo_rating', { ascending: false })
+      .limit(6);
+
+    if (error) throw error;
+    return teams || [];
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    return [];
+  }
+}
+
+async function getTopPlayers(): Promise<PlayerWithRoster[]> {
+  try {
+    const { data: players, error } = await supabase
+      .from('players')
+      .select(`
+        id,
+        gamertag,
+        position,
+        region_id,
+        current_team_id,
+        performance_score,
+        player_rp,
+        player_rank_score,
+        monthly_value,
+        created_at,
+        team_rosters (
+          id,
+          team_id,
+          player_id,
+          is_captain,
+          is_player_coach,
+          joined_at,
+          left_at,
+          event_id
+        )
+      `)
+      .is('team_rosters.left_at', null)
+      .order('player_rp', { ascending: false })
+      .limit(8);
+
+    if (error) throw error;
+    return players || [];
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [recent, upcoming] = await Promise.all([getRecentMatches(), getUpcomingMatches()]);
+  const [recent, upcoming, topTeams, topPlayers] = await Promise.all([
+    getRecentMatches(),
+    getUpcomingMatches(),
+    getTopTeams(),
+    getTopPlayers()
+  ]);
 
-  const renderMatchRow = (match: MatchWithTeams) => {
-    const date = match.played_at ? new Date(match.played_at) : null;
-    const score = match.score_a !== null && match.score_b !== null ? (
-      <span className="font-mono text-gray-900 dark:text-gray-100">{match.score_a}-{match.score_b}</span>
-    ) : (
-      <span className="text-gray-500 dark:text-gray-400">vs</span>
-    );
 
-    return (
-      <tr key={match.id} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-        <td className="px-6 py-4 whitespace-nowrap">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
-              {match.team_a?.logo_url ? (
-                <Image 
-                  src={match.team_a.logo_url} 
-                  alt={match.team_a.name} 
-                  width={32} 
-                  height={32} 
-                  className="rounded-full" 
-                  unoptimized 
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {match.team_a?.name[0]}
-                </div>
-              )}
-            </div>
-            <div className="ml-4">
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {match.team_a?.name}
-              </div>
-            </div>
-          </div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center">
-              {match.team_b?.logo_url ? (
-                <Image 
-                  src={match.team_b.logo_url} 
-                  alt={match.team_b.name} 
-                  width={32} 
-                  height={32} 
-                  className="rounded-full" 
-                  unoptimized 
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-200">
-                  {match.team_b?.name[0]}
-                </div>
-              )}
-            </div>
-            <div className="ml-4">
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                {match.team_b?.name}
-              </div>
-            </div>
-          </div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap text-center">
-          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            {score}
-          </div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap text-right">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {date ? format(date, 'MMM d, h:mm a') : 'TBD'}
-          </div>
-        </td>
-      </tr>
-    );
-  };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-12">
-      <section className="text-center space-y-4">
-        <h1 className="text-4xl font-extrabold text-white drop-shadow">UPA Summer Championships</h1>
-        <p className="text-lg text-gray-200">NBA 2K Pro Am Tournament</p>
-      </section>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3, minHeight: '100vh' }}>
+      {/* Hero Section */}
+      <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Typography 
+          variant="h2" 
+          component="h1" 
+          sx={{ 
+            fontWeight: 'bold', 
+            color: 'primary.contrastText',
+            mb: 2,
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+          }}
+        >
+          UPA Summer Championships
+        </Typography>
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            color: 'text.secondary',
+            mb: 4
+          }}
+        >
+          NBA 2K Pro Am Tournament
+        </Typography>
+      </Box>
 
-      <section className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Recent Results</h2>
-        </div>
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <colgroup>
-            <col className="w-2/5" />
-            <col className="w-2/5" />
-            <col className="w-1/10" />
-            <col className="w-1/5" />
-          </colgroup>
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Home</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Away</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Score</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Played</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {recent.map((match) => renderMatchRow(match))}
-            {recent.length === 0 && (
-              <tr><td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">No recent matches</td></tr>
-            )}
-          </tbody>
-        </table>
-      </section>
+      {/* Teams Section */}
+      <Box sx={{ mb: 6 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Top Teams
+          </Typography>
+          <Button 
+            component={Link} 
+            href="/teams" 
+            variant="outlined" 
+            color="primary"
+            sx={{ textTransform: 'none' }}
+          >
+            View All Teams
+          </Button>
+        </Box>
+        <Grid container spacing={3}>
+          {topTeams.map((team) => (
+            <Grid item xs={12} sm={6} md={4} key={team.id}>
+              <Card 
+                component={Link} 
+                href={`/teams/${team.id}`}
+                sx={{ 
+                  height: '100%',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 4,
+                  },
+                  cursor: 'pointer'
+                }}
+              >
+                <CardHeader
+                  avatar={
+                    <Avatar 
+                      src={team.logo_url || undefined} 
+                      sx={{ 
+                        width: 48, 
+                        height: 48,
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText'
+                      }}
+                    >
+                      {team.logo_url ? '' : team.name.charAt(0)}
+                    </Avatar>
+                  }
+                  title={
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                      {team.name}
+                    </Typography>
+                  }
+                  subheader={
+                    <Typography variant="body2" color="text.secondary">
+                      {team.regions?.[0]?.name || 'No Region'}
+                    </Typography>
+                  }
+                />
+                <CardContent sx={{ pt: 0 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                    {team.global_rank && (
+                      <Chip 
+                        label={`#${team.global_rank} Global`} 
+                        size="small" 
+                        color="primary" 
+                        variant="outlined"
+                      />
+                    )}
+                    {team.leaderboard_tier && (
+                      <Chip 
+                        label={team.leaderboard_tier} 
+                        size="small" 
+                        color="secondary"
+                      />
+                    )}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        ELO Rating
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                        {team.elo_rating || 'N/A'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Current RP
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                        {team.current_rp || 0}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
-      <section className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Upcoming Schedule</h2>
-        </div>
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <colgroup>
-            <col className="w-2/5" />
-            <col className="w-2/5" />
-            <col className="w-1/10" />
-            <col className="w-1/5" />
-          </colgroup>
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Home</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Away</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Score</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tip Off</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {upcoming.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No upcoming games
-                </td>
-              </tr>
-            ) : (
-              upcoming.map((match) => renderMatchRow(match))
-            )}
-          </tbody>
-        </table>
-      </section>
+      {/* Top Players Section */}
+      <Box sx={{ mb: 6 }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 3 }}>
+          Featured Players
+        </Typography>
+        <Paper sx={{ p: 3, bgcolor: 'background.paper' }}>
+          <Grid container spacing={2}>
+            {topPlayers.slice(0, 8).map((player) => {
+              const rosterInfo = player.team_rosters?.[0];
+              return (
+                <Grid item xs={12} sm={6} md={3} key={player.id}>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      p: 2,
+                      borderRadius: 1,
+                      bgcolor: 'grey.50',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        bgcolor: 'primary.light',
+                        '& .MuiTypography-root': {
+                          color: 'primary.contrastText',
+                        },
+                      },
+                    }}
+                  >
+                    <Avatar 
+                      sx={{ 
+                        mr: 2,
+                        width: 40,
+                        height: 40,
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText'
+                      }}
+                    >
+                      {player.gamertag.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: 'text.primary',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {player.gamertag}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                        {player.position && (
+                          <Chip 
+                            label={player.position} 
+                            size="small" 
+                            sx={{
+                              fontSize: '0.7rem',
+                              height: 20,
+                              bgcolor: 'primary.main',
+                              color: 'primary.contrastText',
+                            }}
+                          />
+                        )}
+                        {rosterInfo?.is_captain && (
+                          <Chip 
+                            label="C" 
+                            size="small" 
+                            sx={{
+                              fontSize: '0.7rem',
+                              height: 20,
+                              bgcolor: 'warning.main',
+                              color: 'warning.contrastText',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Paper>
+      </Box>
 
-      <section className="space-y-4 text-center">
-        <h2 className="text-2xl font-bold text-white drop-shadow">Sponsors</h2>
-        <p className="text-gray-200">Thanks to our amazing partners for supporting the UPA Summer Championships.</p>
-        <div className="flex justify-center space-x-8">
-          <span className="text-gray-300">Sponsor 1</span>
-          <span className="text-gray-300">Sponsor 2</span>
-          <span className="text-gray-300">Sponsor 3</span>
-        </div>
-      </section>
+      {/* Recent Results Section */}
+      <Paper sx={{ mb: 6, overflow: 'hidden' }}>
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50' }}>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Recent Results
+          </Typography>
+        </Box>
+        <Box sx={{ overflowX: 'auto' }}>
+          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+            <Box component="thead" sx={{ bgcolor: 'grey.100' }}>
+              <Box component="tr">
+                <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Home</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Away</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'center', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Score</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'right', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Played</Box>
+              </Box>
+            </Box>
+            <Box component="tbody">
+              {recent.map((match) => {
+                const date = match.played_at ? new Date(match.played_at) : null;
+                const score = match.score_a !== null && match.score_b !== null ? (
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'text.primary' }}>
+                    {match.score_a}-{match.score_b}
+                  </Typography>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">vs</Typography>
+                );
 
-      <section className="space-y-2 text-center">
-        <h2 className="text-2xl font-bold text-white drop-shadow">Organized by UPA</h2>
-        <p className="text-gray-200">For inquiries contact info@unitedproam.gg</p>
-      </section>
-    </div>
+                return (
+                  <Box 
+                    component="tr" 
+                    key={match.id}
+                    sx={{ 
+                      borderTop: 1, 
+                      borderColor: 'divider',
+                      '&:hover': {
+                        bgcolor: 'grey.50'
+                      }
+                    }}
+                  >
+                    <Box component="td" sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar 
+                          src={match.team_a?.logo_url || undefined} 
+                          sx={{ 
+                            width: 32, 
+                            height: 32, 
+                            mr: 2,
+                            bgcolor: 'grey.200',
+                            color: 'text.primary'
+                          }}
+                        >
+                          {match.team_a?.logo_url ? '' : match.team_a?.name?.[0]}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                          {match.team_a?.name}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box component="td" sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar 
+                          src={match.team_b?.logo_url || undefined} 
+                          sx={{ 
+                            width: 32, 
+                            height: 32, 
+                            mr: 2,
+                            bgcolor: 'grey.200',
+                            color: 'text.primary'
+                          }}
+                        >
+                          {match.team_b?.logo_url ? '' : match.team_b?.name?.[0]}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                          {match.team_b?.name}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
+                      {score}
+                    </Box>
+                    <Box component="td" sx={{ p: 2, textAlign: 'right' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {date ? format(date, 'MMM d, h:mm a') : 'TBD'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })}
+              {recent.length === 0 && (
+                <Box component="tr">
+                  <Box component="td" colSpan={4} sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No recent matches
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+
+      {/* Upcoming Schedule Section */}
+      <Paper sx={{ mb: 6, overflow: 'hidden' }}>
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50' }}>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Upcoming Schedule
+          </Typography>
+        </Box>
+        <Box sx={{ overflowX: 'auto' }}>
+          <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+            <Box component="thead" sx={{ bgcolor: 'grey.100' }}>
+              <Box component="tr">
+                <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Home</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Away</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'center', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Score</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'right', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Tip Off</Box>
+              </Box>
+            </Box>
+            <Box component="tbody">
+              {upcoming.length === 0 ? (
+                <Box component="tr">
+                  <Box component="td" colSpan={4} sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No upcoming games
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : (
+                upcoming.map((match) => {
+                  const date = match.played_at ? new Date(match.played_at) : null;
+                  const score = match.score_a !== null && match.score_b !== null ? (
+                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'text.primary' }}>
+                      {match.score_a}-{match.score_b}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">vs</Typography>
+                  );
+
+                  return (
+                    <Box 
+                      component="tr" 
+                      key={match.id}
+                      sx={{ 
+                        borderTop: 1, 
+                        borderColor: 'divider',
+                        '&:hover': {
+                          bgcolor: 'grey.50'
+                        }
+                      }}
+                    >
+                      <Box component="td" sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar 
+                            src={match.team_a?.logo_url || undefined} 
+                            sx={{ 
+                              width: 32, 
+                              height: 32, 
+                              mr: 2,
+                              bgcolor: 'grey.200',
+                              color: 'text.primary'
+                            }}
+                          >
+                            {match.team_a?.logo_url ? '' : match.team_a?.name?.[0]}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                            {match.team_a?.name}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box component="td" sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar 
+                            src={match.team_b?.logo_url || undefined} 
+                            sx={{ 
+                              width: 32, 
+                              height: 32, 
+                              mr: 2,
+                              bgcolor: 'grey.200',
+                              color: 'text.primary'
+                            }}
+                          >
+                            {match.team_b?.logo_url ? '' : match.team_b?.name?.[0]}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                            {match.team_b?.name}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
+                        {score}
+                      </Box>
+                      <Box component="td" sx={{ p: 2, textAlign: 'right' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {date ? format(date, 'MMM d, h:mm a') : 'TBD'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+
+      {/* Sponsors Section */}
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'primary.contrastText', mb: 2, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+          Sponsors
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
+          Thanks to our amazing partners for supporting the UPA Summer Championships.
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
+          <Typography variant="body1" color="text.secondary">Sponsor 1</Typography>
+          <Typography variant="body1" color="text.secondary">Sponsor 2</Typography>
+          <Typography variant="body1" color="text.secondary">Sponsor 3</Typography>
+        </Box>
+      </Box>
+
+      {/* Footer Section */}
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'primary.contrastText', mb: 1, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+          Organized by UPA
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          For inquiries contact info@unitedproam.gg
+        </Typography>
+      </Box>
+    </Box>
   );
 }

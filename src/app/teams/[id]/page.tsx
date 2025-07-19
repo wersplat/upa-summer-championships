@@ -1,9 +1,27 @@
 import { supabase } from '@/utils/supabase';
 import { notFound } from 'next/navigation';
-import TeamHeader from '@/components/TeamHeader';
+import Link from 'next/link';
+import {
+  Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  Avatar,
+  Chip,
+  Card,
+  CardContent,
+  Divider,
+  Button,
+} from '@mui/material';
+import {
+  ArrowBack,
+  EmojiEvents,
+  TrendingUp,
+  Groups,
+  LocationOn,
+} from '@mui/icons-material';
 import RosterTable from '@/components/RosterTable';
-import MatchHistory from '@/components/MatchHistory';
-import TeamStats from '@/components/TeamStats';
 import { Team, Player, Match } from '@/utils/supabase';
 
 interface TeamWithRoster extends Team {
@@ -179,73 +197,355 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
       notFound();
     }
 
-    // Format team stats for the TeamStats component
-    const teamStats = {
-      ...team,
-      team_stats: {
-        games_played: team.stats.games_played,
-        wins: team.stats.wins,
-        losses: team.stats.losses,
-        avg_points: team.stats.avg_points,
-        avg_points_against: 0, // Adding default value for missing property
-        current_streak: 0,
-        form_last_5: []
-      },
-      // Add RP and ELO info if available
-      team_rp: team.current_rp || 0,
-      team_elo_rating: team.elo_rating || 1500,
-      region: team.regions?.[0] // Ensure region is properly passed
-    };
+
 
     return (
-      <div className="min-h-screen transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <TeamHeader team={team} />
-          
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <RosterTable players={team.players} />
-              <MatchHistory matches={team.recent_matches} teamId={team.id} />
-            </div>
-            
-            <div className="lg:col-span-1 space-y-6">
-              {/* Additional Team Info */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Team Details</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Region:</span>
-                    <span className="font-medium">{team.regions?.[0]?.name || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">ELO Rating:</span>
-                    <span className="font-medium">{team.elo_rating?.toFixed(0) || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Ranking Points:</span>
-                    <span className="font-medium">{team.current_rp || 0}</span>
-                  </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        {/* Header Section */}
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #001F3F 0%, #1E40AF 100%)',
+          color: 'white',
+          py: 4,
+          px: 3
+        }}>
+          <Container maxWidth="lg">
+            {/* Back Button */}
+            <Box sx={{ mb: 3 }}>
+              <Button
+                component={Link}
+                href="/teams"
+                startIcon={<ArrowBack />}
+                sx={{ 
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+              >
+                Back to Teams
+              </Button>
+            </Box>
+
+            {/* Team Header */}
+            <Grid container spacing={3} alignItems="center">
+              <Grid item>
+                <Avatar
+                  src={team.logo_url || undefined}
+                  imgProps={{ referrerPolicy: 'no-referrer' }}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    fontSize: '3rem',
+                    fontWeight: 'bold',
+                    border: '4px solid rgba(255,255,255,0.3)'
+                  }}
+                >
+                  {team.logo_url ? '' : team.name.charAt(0).toUpperCase()}
+                </Avatar>
+              </Grid>
+              <Grid item xs>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                  <Typography 
+                    variant="h3" 
+                    component="h1" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    {team.name}
+                  </Typography>
+                  {team.global_rank && team.global_rank <= 10 && (
+                    <Chip
+                      label={`#${team.global_rank}`}
+                      sx={{
+                        bgcolor: team.global_rank === 1 ? 'warning.main' : team.global_rank <= 3 ? 'secondary.main' : 'primary.main',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '1.1rem',
+                        height: 36
+                      }}
+                    />
+                  )}
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <LocationOn sx={{ fontSize: 20 }} />
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    {team.regions?.[0]?.name || 'No Region'}
+                  </Typography>
+                  {team.leaderboard_tier && (
+                    <Chip 
+                      label={team.leaderboard_tier} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        ml: 1
+                      }}
+                    />
+                  )}
+                </Box>
+
+                {/* Quick Stats */}
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
+                      <EmojiEvents sx={{ fontSize: 32, mb: 1, color: 'warning.main' }} />
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        {team.elo_rating?.toFixed(0) || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                        ELO Rating
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
+                      <TrendingUp sx={{ fontSize: 32, mb: 1, color: 'secondary.main' }} />
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        {team.current_rp || 0}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                        Ranking Points
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
+                      <Groups sx={{ fontSize: 32, mb: 1, color: 'info.main' }} />
+                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        {team.stats.wins}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                        Wins
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
+                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'error.main' }}>
+                        {team.stats.losses}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                        Losses
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        {/* Main Content */}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Grid container spacing={4}>
+            {/* Left Column - Roster and Match History */}
+            <Grid item xs={12} lg={8}>
+              <Box sx={{ mb: 4 }}>
+                <Paper sx={{ p: 3 }}>
+                  <Typography variant="h5" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
+                    Team Roster
+                  </Typography>
+                  <RosterTable players={team.players} />
+                </Paper>
+              </Box>
+
+              {/* Recent Matches */}
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h5" component="h2" sx={{ fontWeight: 600, mb: 3 }}>
+                  Recent Matches
+                </Typography>
+                {team.recent_matches.length > 0 ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {team.recent_matches.map((match) => {
+                      const isTeamA = match.team_a_id === team.id;
+                      const teamScore = isTeamA ? match.score_a : match.score_b;
+                      const opponentScore = isTeamA ? match.score_b : match.score_a;
+                      const opponent = isTeamA ? match.team_b : match.team_a;
+                      const won = (teamScore || 0) > (opponentScore || 0);
+                      
+                      return (
+                        <Card key={match.id} sx={{ 
+                          bgcolor: won ? 'success.light' : 'error.light',
+                          color: won ? 'success.contrastText' : 'error.contrastText'
+                        }}>
+                          <CardContent>
+                            <Grid container alignItems="center" spacing={2}>
+                              <Grid item xs={6}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                  <Avatar 
+                                    src={opponent?.logo_url || undefined}
+                                    sx={{ width: 40, height: 40 }}
+                                  >
+                                    {opponent?.name?.charAt(0) || '?'}
+                                  </Avatar>
+                                  <Typography variant="h6">
+                                    vs {opponent?.name || 'Unknown'}
+                                  </Typography>
+                                </Box>
+                              </Grid>
+                              <Grid item xs={3}>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+                                  {teamScore} - {opponentScore}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={3}>
+                                <Typography variant="body2" sx={{ textAlign: 'right' }}>
+                                  {match.played_at ? new Date(match.played_at).toLocaleDateString() : 'TBD'}
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                    No recent matches found
+                  </Typography>
+                )}
+              </Paper>
+            </Grid>
+
+            {/* Right Column - Team Details and Stats */}
+            <Grid item xs={12} lg={4}>
+              {/* Team Details */}
+              <Paper sx={{ p: 3, mb: 3 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 3 }}>
+                  Team Details
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Region
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {team.regions?.[0]?.name || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Divider />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      ELO Rating
+                    </Typography>
+                    <Chip 
+                      label={team.elo_rating?.toFixed(0) || 'N/A'} 
+                      color="primary" 
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Divider />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Ranking Points
+                    </Typography>
+                    <Chip 
+                      label={team.current_rp || 0} 
+                      color="secondary" 
+                      variant="outlined"
+                    />
+                  </Box>
                   {team.global_rank && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 dark:text-gray-400">Global Rank:</span>
-                      <span className="font-medium">#{team.global_rank}</span>
-                    </div>
+                    <>
+                      <Divider />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Global Rank
+                        </Typography>
+                        <Chip 
+                          label={`#${team.global_rank}`} 
+                          color="warning" 
+                          variant="outlined"
+                        />
+                      </Box>
+                    </>
                   )}
                   {team.leaderboard_tier && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 dark:text-gray-400">Tier:</span>
-                      <span className="font-medium">{team.leaderboard_tier}</span>
-                    </div>
+                    <>
+                      <Divider />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Tier
+                        </Typography>
+                        <Chip 
+                          label={team.leaderboard_tier} 
+                          color="info" 
+                          variant="outlined"
+                        />
+                      </Box>
+                    </>
                   )}
-                </div>
-              </div>
-              
-              {/* Team Stats */}
-              <TeamStats team={teamStats} />
-            </div>
-          </div>
-        </div>
-      </div>
+                </Box>
+              </Paper>
+
+              {/* Performance Stats */}
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 3 }}>
+                  Performance Stats
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                        {team.stats.games_played}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Games Played
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 600, color: 'secondary.main' }}>
+                        {team.stats.avg_points.toFixed(1)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Avg Points
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 600, color: 'success.contrastText' }}>
+                        {team.stats.wins}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'success.contrastText', opacity: 0.8 }}>
+                        Wins
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
+                      <Typography variant="h4" sx={{ fontWeight: 600, color: 'error.contrastText' }}>
+                        {team.stats.losses}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'error.contrastText', opacity: 0.8 }}>
+                        Losses
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+                
+                {/* Win Rate */}
+                {team.stats.games_played > 0 && (
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Win Rate
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                      {((team.stats.wins / team.stats.games_played) * 100).toFixed(1)}%
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
     );
   } catch (error) {
     console.error('Error in TeamPage:', error);

@@ -3,7 +3,6 @@ import { createTheme, ThemeProvider, CssBaseline, responsiveFontSizes } from '@m
 import { createContext, useEffect, useMemo, useState } from 'react';
 
 export const ColorModeContext = createContext<{ toggleColorMode: () => void; mode: 'light' | 'dark'; }>({
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   toggleColorMode: () => {},
   mode: 'light',
 });
@@ -31,11 +30,56 @@ export default function MuiThemeProvider({ children }: { children: React.ReactNo
     let t = createTheme({
       palette: {
         mode,
-        primary: { main: '#0b2a4a' },
-        secondary: { main: '#f6d860' },
+        primary: {
+          main: mode === 'light' ? '#0b2a4a' : '#4a90e2',
+          light: mode === 'light' ? '#3d5a80' : '#7bb3f0',
+          dark: mode === 'light' ? '#051220' : '#2c5aa0',
+          contrastText: '#ffffff',
+        },
+        secondary: {
+          main: mode === 'light' ? '#f6d860' : '#ffd93d',
+          light: mode === 'light' ? '#f8e082' : '#ffe066',
+          dark: mode === 'light' ? '#d4b942' : '#ccac00',
+          contrastText: mode === 'light' ? '#000000' : '#000000',
+        },
+        warning: {
+          main: mode === 'light' ? '#ff9800' : '#ffb74d',
+          light: mode === 'light' ? '#ffb74d' : '#ffc947',
+          dark: mode === 'light' ? '#f57c00' : '#ff8f00',
+          contrastText: '#ffffff',
+        },
         background: {
-          default: '#fefefe',
-          paper: '#ffffff',
+          default: mode === 'light' ? '#fafafa' : '#121212',
+          paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
+        },
+        text: {
+          primary: mode === 'light' ? '#212121' : '#ffffff',
+          secondary: mode === 'light' ? '#757575' : '#b3b3b3',
+        },
+        grey: {
+          50: mode === 'light' ? '#fafafa' : '#2c2c2c',
+          100: mode === 'light' ? '#f5f5f5' : '#3c3c3c',
+          200: mode === 'light' ? '#eeeeee' : '#4c4c4c',
+          300: mode === 'light' ? '#e0e0e0' : '#5c5c5c',
+          400: mode === 'light' ? '#bdbdbd' : '#6c6c6c',
+          500: mode === 'light' ? '#9e9e9e' : '#7c7c7c',
+        },
+        divider: mode === 'light' ? '#e0e0e0' : '#424242',
+      },
+      components: {
+        MuiTableCell: {
+          styleOverrides: {
+            root: {
+              borderColor: mode === 'light' ? '#e0e0e0' : '#424242',
+            },
+          },
+        },
+        MuiChip: {
+          styleOverrides: {
+            root: {
+              fontWeight: 500,
+            },
+          },
         },
       },
     });
