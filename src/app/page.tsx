@@ -392,6 +392,7 @@ export default async function Home() {
                   avatar={
                     <Avatar 
                       src={team.logo_url || undefined} 
+                      imgProps={{ referrerPolicy: 'no-referrer' }}
                       sx={{ 
                         width: 48, 
                         height: 48,
