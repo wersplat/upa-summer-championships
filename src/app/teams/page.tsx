@@ -23,26 +23,55 @@ async function getTeams(): Promise<TeamWithRegion[]> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
     
-    // Get teams that have matches in the specific event
-    const { data: teamIds, error: matchError } = await supabase
-      .from('matches')
-      .select('team_a_id, team_b_id')
+    // Get teams that have roster entries for the specific event
+    const { data: teamRosters, error: rosterError } = await supabase
+      .from('team_rosters')
+      .select('team_id')
       .eq('event_id', eventId);
 
-    if (matchError) throw matchError;
-
-    // Extract unique team IDs from matches
-    const uniqueTeamIds = new Set<string>();
-    teamIds?.forEach(match => {
-      if (match.team_a_id) uniqueTeamIds.add(match.team_a_id);
-      if (match.team_b_id) uniqueTeamIds.add(match.team_b_id);
-    });
-
-    if (uniqueTeamIds.size === 0) {
-      return [];
+    if (rosterError) {
+      console.error('Error fetching team rosters:', rosterError);
+      throw rosterError;
     }
 
-    // Fetch team details for teams participating in the event
+    // Extract unique team IDs from rosters
+    const uniqueTeamIds = new Set<string>();
+    teamRosters?.forEach(roster => {
+      if (roster.team_id) uniqueTeamIds.add(roster.team_id);
+    });
+
+    console.log(`Found ${uniqueTeamIds.size} teams with rosters for event ${eventId}`);
+
+    // If no teams found for this event, fall back to showing all teams
+    if (uniqueTeamIds.size === 0) {
+      console.log('No team rosters found for event, showing all teams as fallback');
+      
+      const { data: allTeams, error: allTeamsError } = await supabase
+        .from('teams')
+        .select(`
+          id,
+          name,
+          logo_url,
+          region_id,
+          current_rp,
+          elo_rating,
+          global_rank,
+          leaderboard_tier,
+          created_at,
+          regions (id, name)
+        `)
+        .order('elo_rating', { ascending: false });
+      
+      if (allTeamsError) {
+        console.error('Error fetching all teams:', allTeamsError);
+        throw allTeamsError;
+      }
+      
+      console.log(`Returning ${allTeams?.length || 0} teams from fallback`);
+      return allTeams || [];
+    }
+
+    // Fetch team details for teams that have rosters in the event
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -60,10 +89,15 @@ async function getTeams(): Promise<TeamWithRegion[]> {
       .in('id', Array.from(uniqueTeamIds))
       .order('elo_rating', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching teams:', error);
+      throw error;
+    }
+    
+    console.log(`Successfully fetched ${teams?.length || 0} teams for event`);
     return teams || [];
   } catch (error) {
-    console.error('Error fetching teams:', error);
+    console.error('Error in getTeams:', error);
     return [];
   }
 }
@@ -72,5 +106,12 @@ async function getTeams(): Promise<TeamWithRegion[]> {
 
 export default async function TeamsPage() {
   const teams = await getTeams();
+  console.log(`Server: Passing ${teams.length} teams to client component`);
+  
+  // Add a simple fallback if teams is empty
+  if (!teams || teams.length === 0) {
+    console.error('Server: No teams found, this should not happen with fallback');
+  }
+  
   return <TeamsPageClient teams={teams} />;
 }

@@ -65,22 +65,22 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
     
-    // First, verify the team is participating in the specific event
-    const { data: teamMatches, error: matchError } = await supabase
-      .from('matches')
-      .select('team_a_id, team_b_id')
+    // First, verify the team has a roster for the specific event
+    const { data: teamRoster, error: rosterError } = await supabase
+      .from('team_rosters')
+      .select('team_id')
       .eq('event_id', eventId)
-      .or(`team_a_id.eq.${id},team_b_id.eq.${id}`);
+      .eq('team_id', id);
 
-    if (matchError) {
-      console.error('Error checking team participation:', matchError);
+    if (rosterError) {
+      console.error('Error checking team roster:', rosterError);
       return null;
     }
 
-    // If team has no matches in this event, return null
-    if (!teamMatches || teamMatches.length === 0) {
-      console.log(`Team ${id} is not participating in event ${eventId}`);
-      return null;
+    // If team has no roster for this event, continue anyway (fallback behavior)
+    if (!teamRoster || teamRoster.length === 0) {
+      console.log(`Team ${id} has no roster for event ${eventId}, showing team anyway`);
+      // Don't return null, continue to show the team
     }
 
     // Get the team by id with region info
@@ -99,7 +99,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
     }
 
     // Fetch team roster with player details
-    const { data: rosterData, error: rosterError } = await supabase
+    const { data: rosterData, error: rosterDataError } = await supabase
       .from('team_rosters')
       .select(`
         id,
@@ -114,13 +114,13 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       `)
       .eq('team_id', teamData.id);
 
-    if (rosterError) {
-      console.error('Error fetching team roster:', rosterError);
-      throw rosterError;
+    if (rosterDataError) {
+      console.error('Error fetching team roster:', rosterDataError);
+      throw rosterDataError;
     }
 
-    // Get recent matches from the specific event (last 5)
-    const { data: matchesData, error: matchesError } = await supabase
+    // Get recent matches from the specific event (last 5), fallback to all matches if none found
+    let { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
         id,
@@ -137,6 +137,30 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
       .order('played_at', { ascending: false })
       .limit(5);
+
+    // If no matches found for the specific event, get all matches for the team
+    if (!matchesData || matchesData.length === 0) {
+      console.log(`No matches found for team ${teamData.id} in event ${eventId}, showing all matches`);
+      const { data: allMatchesData, error: allMatchesError } = await supabase
+        .from('matches')
+        .select(`
+          id,
+          event_id,
+          team_a_id,
+          team_b_id,
+          score_a,
+          score_b,
+          played_at,
+          team_a:team_a_id (id, name, logo_url),
+          team_b:team_b_id (id, name, logo_url)
+        `)
+        .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
+        .order('played_at', { ascending: false })
+        .limit(5);
+      
+      matchesData = allMatchesData;
+      matchesError = allMatchesError;
+    }
 
     if (matchesError) throw matchesError;
 
