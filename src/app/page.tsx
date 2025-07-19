@@ -581,22 +581,27 @@ export default async function Home() {
               const rosterInfo = player.team_rosters?.[0];
               return (
                 <Grid item xs={12} sm={6} md={3} key={player.id}>
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      p: 2,
-                      borderRadius: 1,
-                      bgcolor: 'grey.50',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        bgcolor: 'primary.light',
-                        '& .MuiTypography-root': {
-                          color: 'primary.contrastText',
-                        },
-                      },
-                    }}
+                  <Link 
+                    href={`/players/${player.id}`}
+                    style={{ textDecoration: 'none' }}
                   >
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        p: 2,
+                        borderRadius: 1,
+                        bgcolor: 'grey.50',
+                        transition: 'all 0.2s ease-in-out',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: 'primary.light',
+                          '& .MuiTypography-root': {
+                            color: 'primary.contrastText',
+                          },
+                        },
+                      }}
+                    >
                     <Avatar 
                       sx={{ 
                         mr: 2,
@@ -648,7 +653,8 @@ export default async function Home() {
                         )}
                       </Box>
                     </Box>
-                  </Box>
+                    </Box>
+                  </Link>
                 </Grid>
               );
             })}
