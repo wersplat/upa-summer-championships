@@ -130,7 +130,34 @@ type TeamWithStats = Omit<TeamWithRegion, 'elo_rating'> & {
 
 async function getTopTeams(): Promise<TeamWithStats[]> {
   try {
-    // First, get the top teams by ELO rating
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+    
+    // First, get teams that have roster entries for the specific event
+    const { data: teamRosters, error: rosterError } = await supabase
+      .from('team_rosters')
+      .select('team_id')
+      .eq('event_id', eventId);
+
+    if (rosterError) {
+      console.error('Error fetching team rosters:', rosterError);
+      throw rosterError;
+    }
+
+    // Extract unique team IDs from rosters
+    const uniqueTeamIds = new Set<string>();
+    teamRosters?.forEach(roster => {
+      if (roster.team_id) uniqueTeamIds.add(roster.team_id);
+    });
+
+    console.log(`Found ${uniqueTeamIds.size} teams with rosters for event ${eventId}`);
+
+    // If no teams found for this event, return empty array
+    if (uniqueTeamIds.size === 0) {
+      console.log('No team rosters found for event');
+      return [];
+    }
+
+    // Get the top teams by current_rp that are in our event
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -144,6 +171,7 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
         created_at,
         regions (id, name)
       `)
+      .in('id', Array.from(uniqueTeamIds))
       .order('current_rp', { ascending: false })
       .limit(6);
 
