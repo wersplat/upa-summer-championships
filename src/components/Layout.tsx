@@ -54,6 +54,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               Players
             </Typography>
+            <Typography
+              component={Link}
+              href="/draft-pool"
+              sx={{
+                color: pathname === '/draft-pool' || pathname.startsWith('/draft-pool/') ? 'secondary.main' : 'inherit',
+                textDecoration: 'none',
+                borderBottom: 2,
+                borderColor: pathname === '/draft-pool' || pathname.startsWith('/draft-pool/') ? 'secondary.main' : 'transparent',
+                px: 1,
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }}
+            >
+              Draft Pool
+            </Typography>
           </Box>
           <IconButton color="inherit" onClick={toggleColorMode} aria-label="Toggle dark mode">
             {mode === 'dark' ? <LightMode /> : <DarkMode />}
