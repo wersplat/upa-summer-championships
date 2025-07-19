@@ -63,7 +63,27 @@ export const revalidate = 3600; // Revalidate data every hour
 
 async function getTeamData(id: string): Promise<TeamWithRoster | null> {
   try {
-    // First, get the team by id with region info
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
+    
+    // First, verify the team is participating in the specific event
+    const { data: teamMatches, error: matchError } = await supabase
+      .from('matches')
+      .select('team_a_id, team_b_id')
+      .eq('event_id', eventId)
+      .or(`team_a_id.eq.${id},team_b_id.eq.${id}`);
+
+    if (matchError) {
+      console.error('Error checking team participation:', matchError);
+      return null;
+    }
+
+    // If team has no matches in this event, return null
+    if (!teamMatches || teamMatches.length === 0) {
+      console.log(`Team ${id} is not participating in event ${eventId}`);
+      return null;
+    }
+
+    // Get the team by id with region info
     const { data: teamData, error: teamError } = await supabase
       .from('teams')
       .select(`
@@ -99,7 +119,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       throw rosterError;
     }
 
-    // Get recent matches (last 5)
+    // Get recent matches from the specific event (last 5)
     const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
@@ -113,6 +133,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
         team_a:team_a_id (id, name, logo_url),
         team_b:team_b_id (id, name, logo_url)
       `)
+      .eq('event_id', eventId)
       .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
       .order('played_at', { ascending: false })
       .limit(5);
@@ -141,14 +162,9 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
         : sum + (match.score_b || 0);
     }, 0) || 0;
 
-    const totalPointsAgainst = processedMatches?.reduce((sum, match) => {
-      return match.team_a_id === teamData.id
-        ? sum + (match.score_b || 0)
-        : sum + (match.score_a || 0);
-    }, 0) || 0;
 
-    const avgPoints = gamesPlayed > 0 ? Math.round((totalPointsFor / gamesPlayed) * 10) / 10 : 0;
-    const avgPointsAgainst = gamesPlayed > 0 ? Math.round((totalPointsAgainst / gamesPlayed) * 10) / 10 : 0;
+
+
 
     return {
       ...teamData,

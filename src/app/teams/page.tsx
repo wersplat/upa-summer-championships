@@ -21,6 +21,28 @@ interface TeamWithRegion {
 
 async function getTeams(): Promise<TeamWithRegion[]> {
   try {
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
+    
+    // Get teams that have matches in the specific event
+    const { data: teamIds, error: matchError } = await supabase
+      .from('matches')
+      .select('team_a_id, team_b_id')
+      .eq('event_id', eventId);
+
+    if (matchError) throw matchError;
+
+    // Extract unique team IDs from matches
+    const uniqueTeamIds = new Set<string>();
+    teamIds?.forEach(match => {
+      if (match.team_a_id) uniqueTeamIds.add(match.team_a_id);
+      if (match.team_b_id) uniqueTeamIds.add(match.team_b_id);
+    });
+
+    if (uniqueTeamIds.size === 0) {
+      return [];
+    }
+
+    // Fetch team details for teams participating in the event
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -35,6 +57,7 @@ async function getTeams(): Promise<TeamWithRegion[]> {
         created_at,
         regions (id, name)
       `)
+      .in('id', Array.from(uniqueTeamIds))
       .order('elo_rating', { ascending: false });
 
     if (error) throw error;
