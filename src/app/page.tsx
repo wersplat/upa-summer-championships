@@ -866,22 +866,93 @@ export default async function Home() {
       {/* Sponsors Section */}
       <Box sx={{ mb: 6, textAlign: 'center' }}>
         <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'primary.contrastText', mb: 2, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-          Sponsors
+          Our Sponsors
         </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
+        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
           Thanks to our amazing partners for supporting the UPA Summer Championships.
         </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
-          <Typography variant="body1" color="text.secondary">Sponsor 1</Typography>
-          <Typography variant="body1" color="text.secondary">Sponsor 2</Typography>
-          <Typography variant="body1" color="text.secondary">Sponsor 3</Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap',
+          justifyContent: 'center', 
+          alignItems: 'center',
+          gap: 6,
+          maxWidth: 1000,
+          mx: 'auto',
+          px: 2
+        }}>
+          <Box 
+            component="a"
+            href="https://linktr.ee/2kfilmroom"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textDecoration: 'none',
+              transition: 'transform 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)'
+              }
+            }}
+          >
+            <Box 
+              component="img"
+              src="/sponsors/2k-film-room-logo.png"
+              alt="2K Film Room Logo"
+              sx={{
+                height: 80,
+                width: 'auto',
+                maxWidth: '100%',
+                objectFit: 'contain',
+                mb: 1
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              2K Film Room
+            </Typography>
+          </Box>
+          
+          <Box 
+            component="a"
+            href="https://bodegacatsgc.gg"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textDecoration: 'none',
+              transition: 'transform 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)'
+              }
+            }}
+          >
+            <Box 
+              component="img"
+              src="/sponsors/bodega-sponsor-logo.png"
+              alt="Bodega Logo"
+              sx={{
+                height: 80,
+                width: 'auto',
+                maxWidth: '100%',
+                objectFit: 'contain',
+                mb: 1
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Bodega Cats Gaming Club
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
       {/* Footer Section */}
       <Box sx={{ textAlign: 'center' }}>
         <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'primary.contrastText', mb: 1, textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-          Organized by UPA
+          Organized by Unified Pro Am & Bodega Cats Gaming Club
         </Typography>
         <Typography variant="body1" color="text.secondary">
           For inquiries contact info@unitedproam.gg
