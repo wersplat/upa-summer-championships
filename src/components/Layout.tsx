@@ -30,7 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const menuItems = [
     { text: 'Teams', href: '/teams' },
     { text: 'Players', href: '/players' },
-    { text: 'Draft Pool', href: '/draft-pool' },
   ];
 
   return (

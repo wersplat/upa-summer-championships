@@ -268,9 +268,38 @@ const DraftPoolPageClient: React.FC<DraftPoolPageClientProps> = ({
                   />
                   
                   {draftPlayer.player.teams && draftPlayer.player.teams.length > 0 && (
-                    <Typography variant="body2" color="text.secondary">
-                      Current Team: {draftPlayer.player.teams[0].name}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                      {draftPlayer.player.teams[0].logo_url ? (
+                        <img 
+                          src={draftPlayer.player.teams[0].logo_url} 
+                          alt={draftPlayer.player.teams[0].name}
+                          style={{
+                            width: 24,
+                            height: 24,
+                            objectFit: 'contain',
+                            marginRight: 8,
+                            borderRadius: '50%',
+                            border: '1px solid rgba(0, 0, 0, 0.12)'
+                          }}
+                        />
+                      ) : (
+                        <Avatar 
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            fontSize: '0.75rem',
+                            mr: 1,
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText'
+                          }}
+                        >
+                          {draftPlayer.player.teams[0].name.charAt(0).toUpperCase()}
+                        </Avatar>
+                      )}
+                      <Typography variant="body2" color="text.secondary">
+                        {draftPlayer.player.teams[0].name}
+                      </Typography>
+                    </Box>
                   )}
                 </Box>
 

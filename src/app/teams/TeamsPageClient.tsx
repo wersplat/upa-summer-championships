@@ -283,20 +283,48 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                 
                 <CardHeader
                   avatar={
-                    <Avatar 
-                      src={team.logo_url || undefined} 
-                      imgProps={{ referrerPolicy: 'no-referrer' }}
-                      sx={{ 
-                        width: 56, 
+                    <Box 
+                      component="span"
+                      sx={{
+                        width: 56,
                         height: 56,
-                        bgcolor: 'primary.main',
-                        color: 'primary.contrastText',
-                        fontSize: '1.5rem',
-                        fontWeight: 'bold'
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        border: '2px solid',
+                        borderColor: 'divider',
                       }}
                     >
-                      {team.logo_url ? '' : team.name.charAt(0).toUpperCase()}
-                    </Avatar>
+                      {team.logo_url ? (
+                        <img 
+                          src={team.logo_url}
+                          alt={team.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            padding: 4
+                          }}
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <Avatar 
+                          sx={{ 
+                            width: '100%', 
+                            height: '100%',
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText',
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            borderRadius: '50%'
+                          }}
+                        >
+                          {team.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                      )}
+                    </Box>
                   }
                   title={
                     <Typography 

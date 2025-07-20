@@ -285,20 +285,46 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
             {/* Team Header */}
             <Grid container spacing={3} alignItems="center">
               <Grid item>
-                <Avatar
-                  src={team.logo_url || undefined}
-                  imgProps={{ referrerPolicy: 'no-referrer' }}
+                <Box 
                   sx={{
                     width: 120,
                     height: 120,
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    fontSize: '3rem',
-                    fontWeight: 'bold',
-                    border: '4px solid rgba(255,255,255,0.3)'
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '4px solid rgba(255,255,255,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(255,255,255,0.2)'
                   }}
                 >
-                  {team.logo_url ? '' : team.name.charAt(0).toUpperCase()}
-                </Avatar>
+                  {team.logo_url ? (
+                    <img 
+                      src={team.logo_url}
+                      alt={team.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        padding: 8
+                      }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <Typography 
+                      variant="h2" 
+                      component="div"
+                      sx={{ 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        lineHeight: 1,
+                        fontSize: '3rem'
+                      }}
+                    >
+                      {team.name.charAt(0).toUpperCase()}
+                    </Typography>
+                  )}
+                </Box>
               </Grid>
               <Grid item xs>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
