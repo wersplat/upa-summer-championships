@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Card,
   CardHeader,
@@ -103,9 +104,46 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
         background: 'linear-gradient(135deg, #001F3F 0%, #1E40AF 100%)',
         color: 'white',
         py: 8,
-        px: 3
+        px: 3,
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <Box sx={{ maxWidth: 1200, mx: 'auto', textAlign: 'center' }}>
+        <Box sx={{ maxWidth: 1200, mx: 'auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <Box 
+            sx={{
+              position: 'relative',
+              height: { xs: 80, sm: 100, md: 120 },
+              width: '100%',
+              mb: 3,
+              display: 'flex',
+              justifyContent: 'center',
+              '& > span': {
+                position: 'relative !important',
+                width: 'auto !important',
+                height: '100% !important',
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+                '& img': {
+                  objectFit: 'contain',
+                  position: 'relative !important',
+                  height: '100% !important',
+                  width: 'auto !important',
+                }
+              }
+            }}
+          >
+            <Image
+              src="/UPA-Summer-Championships.png"
+              alt="UPA Summer Championships"
+              width={300}
+              height={120}
+              style={{
+                width: 'auto',
+                height: '100%',
+                maxWidth: '100%',
+              }}
+              priority
+            />
+          </Box>
           <Typography 
             variant="h2" 
             component="h1" 
@@ -115,7 +153,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
               textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
             }}
           >
-            Tournament Teams
+            Summer Championship Teams
           </Typography>
           <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
             {initialTeams.length} teams competing in the UPA Summer Championships

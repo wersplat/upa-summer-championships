@@ -288,13 +288,26 @@ export default async function Home() {
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3, minHeight: '100vh' }}>
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
+        <Box 
+          component="img"
+          src="/UPA-Summer-Championships.png"
+          alt="UPA Summer Championships"
+          sx={{
+            height: { xs: 120, sm: 160, md: 200 },
+            width: 'auto',
+            mb: 2,
+            mx: 'auto',
+            display: 'block',
+            filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))'
+          }}
+        />
         <Typography 
           variant="h2" 
           component="h1" 
           sx={{ 
             fontWeight: 'bold', 
             color: 'primary.contrastText',
-            mb: 2,
+            mb: 1,
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
           }}
         >
@@ -457,9 +470,9 @@ export default async function Home() {
       </Paper>
 
       {/* Teams Section */}
-      <Box sx={{ mb: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+      <Paper sx={{ mb: 6, overflow: 'hidden' }}>
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
             Top Teams
           </Typography>
           <Button 
@@ -467,27 +480,29 @@ export default async function Home() {
             href="/teams" 
             variant="outlined" 
             color="primary"
+            size="small"
             sx={{ textTransform: 'none' }}
           >
             View All Teams
           </Button>
         </Box>
-        <Grid container spacing={3}>
-          {topTeams.map((team) => (
-            <Grid item xs={12} sm={6} md={4} key={team.id}>
-              <Card 
-                component={Link} 
-                href={`/teams/${team.id}`}
-                sx={{ 
-                  height: '100%',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                  },
-                  cursor: 'pointer'
-                }}
+        <Box sx={{ p: 3 }}>
+          <Grid container spacing={3}>
+            {topTeams.map((team) => (
+              <Grid item xs={12} sm={6} md={4} key={team.id}>
+                <Card 
+                  component={Link} 
+                  href={`/teams/${team.id}`}
+                  sx={{ 
+                    height: '100%',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 4,
+                    },
+                    cursor: 'pointer'
+                  }}
               >
                 <CardHeader
                   avatar={
@@ -569,6 +584,7 @@ export default async function Home() {
           ))}
         </Grid>
       </Box>
+    </Paper>
 
       {/* Top Players Section */}
       <Box sx={{ mb: 6 }}>

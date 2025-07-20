@@ -48,9 +48,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <MenuIcon />
           </IconButton>
           
-          <Typography component={Link} href="/" variant="h6" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none', fontWeight: 700 }}>
-            UPA Summer Championships
-          </Typography>
+          <Box component={Link} href="/" sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
+            <Box
+              component="img"
+              src="/UPA-Summer-Championships.png"
+              alt="UPA Summer Championships"
+              sx={{
+                height: 40,
+                width: 'auto',
+                mr: 1,
+                display: { xs: 'none', sm: 'block' }
+              }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700, display: { xs: 'none', md: 'block' } }}>
+              UPA Summer Championships
+            </Typography>
+          </Box>
           
           {/* Desktop navigation */}
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2, mr: 2 }}>
@@ -94,9 +107,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }}
       >
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ my: 2, fontWeight: 700 }}>
-            UPA Summer Championships
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+            <Box
+              component="img"
+              src="/UPA-Summer-Championships.png"
+              alt="UPA Summer Championships"
+              sx={{
+                height: 60,
+                width: 'auto',
+                mb: 1
+              }}
+            />
+            <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center' }}>
+              UPA Summer Championships
+            </Typography>
+          </Box>
           <Divider />
           <List>
             {menuItems.map((item) => (

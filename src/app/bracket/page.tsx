@@ -9,7 +9,19 @@ export const metadata: Metadata = {
 export default function BracketPage() {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Box
+          component="img"
+          src="/UPA-Summer-Championships.png"
+          alt="UPA Summer Championships"
+          sx={{
+            height: 80,
+            width: 'auto',
+            mb: 2,
+            mx: 'auto',
+            display: 'block'
+          }}
+        />
         <Typography variant="h4" component="h1" gutterBottom>
           Tournament Bracket & Group Stage
         </Typography>
