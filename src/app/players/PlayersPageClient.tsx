@@ -221,16 +221,28 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
   }
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <Box sx={{ 
+      width: '100%', 
+      p: { xs: 1, sm: 2, md: 3 },
+      overflowX: 'hidden'
+    }}>
+      <Box sx={{ mb: { xs: 2, sm: 4 } }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
           Player Rankings
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 2, sm: 3 } }}>
           View and compare player statistics and rankings
         </Typography>
         
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: { xs: 1, sm: 2 }, 
+          mb: { xs: 2, sm: 3 }, 
+          flexDirection: { xs: 'column', sm: 'row' },
+          '& .MuiFormControl-root': {
+            width: { xs: '100%', sm: 'auto' },
+          }
+        }}>
           <TextField
             placeholder="Search players or teams..."
             variant="outlined"
@@ -244,10 +256,15 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                 </InputAdornment>
               ),
             }}
-            sx={{ minWidth: 250 }}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 250 },
+              '& .MuiInputBase-root': {
+                height: '40px',
+              }
+            }}
           />
           
-          <FormControl size="small" sx={{ minWidth: 120 }}>
+          <FormControl size="small" sx={{ minWidth: 120, width: { xs: '100%', sm: 'auto' } }}>
             <InputLabel>Position</InputLabel>
             <Select
               value={positionFilter}
@@ -263,9 +280,54 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
         </Box>
       </Box>
       
-      <Paper sx={{ width: '100%', mb: 2, overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 'calc(100vh - 300px)' }}>
-          <Table stickyHeader>
+      <Paper sx={{ 
+        width: '100%', 
+        mb: 2, 
+        overflow: 'hidden',
+        boxShadow: { xs: 'none', sm: '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)' }
+      }}>
+        <TableContainer sx={{ 
+          maxHeight: { xs: 'auto', sm: 'calc(100vh - 300px)' },
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          '&::-webkit-scrollbar': {
+            height: '6px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+        }}>
+          <Table 
+            stickyHeader
+            sx={{
+              minWidth: 900,
+              '& .MuiTableCell-root': {
+                py: { xs: 0.75, sm: 1 },
+                px: { xs: 0.75, sm: 1.5 },
+                '&:first-of-type': {
+                  pl: { xs: 1, sm: 2 },
+                },
+                '&:last-child': {
+                  pr: { xs: 1, sm: 2 },
+                }
+              },
+              '& .MuiTableHead-root .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+                py: { xs: 1, sm: 1.25 },
+                px: { xs: 0.75, sm: 1.5 },
+                '&:first-of-type': {
+                  pl: { xs: 1, sm: 2 },
+                },
+                '&:last-child': {
+                  pr: { xs: 1, sm: 2 },
+                }
+              },
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell>
@@ -325,7 +387,11 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                         <Avatar 
                           src={player.avatar_url || undefined} 
                           alt={player.gamertag}
-                          sx={{ width: 32, height: 32 }}
+                          sx={{ 
+                            width: { xs: 28, sm: 32 }, 
+                            height: { xs: 28, sm: 32 },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                          }}
                         >
                           <SportsBasketball />
                         </Avatar>
@@ -334,7 +400,14 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                           style={{ textDecoration: 'none', color: 'inherit' }}
                           onMouseEnter={() => handlePlayerHover(player.id)}
                         >
-                          <Typography variant="body2" sx={{ fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              fontWeight: 500, 
+                              fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                              '&:hover': { textDecoration: 'underline' } 
+                            }}
+                          >
                             {player.gamertag}
                           </Typography>
                         </Link>
@@ -356,10 +429,14 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                             <Avatar 
                               src={player.teams[0].logo_url} 
                               alt={player.teams[0].name}
-                              sx={{ width: 24, height: 24 }}
+                              sx={{ 
+                                width: { xs: 20, sm: 24 }, 
+                                height: { xs: 20, sm: 24 },
+                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
+                              }}
                             />
                           )}
-                          <Typography variant="body2">
+                          <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                             {player.teams[0].name}
                           </Typography>
                         </Box>
@@ -387,6 +464,29 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{
+            '& .MuiTablePagination-toolbar': {
+              flexWrap: 'wrap',
+              gap: 1,
+              '& .MuiTablePagination-spacer': {
+                flex: '0 0 0',
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                m: 0,
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+              '& .MuiTablePagination-actions': {
+                ml: 1,
+              },
+              '& .MuiButtonBase-root': {
+                p: { xs: 0.5, sm: 1 },
+              },
+              '& .MuiSelect-select': {
+                p: { xs: '6px 24px 6px 8px', sm: '8px 32px 8px 12px' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+            },
+          }}
         />
       </Paper>
       

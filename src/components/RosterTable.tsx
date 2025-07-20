@@ -178,21 +178,22 @@ export default function RosterTable({ players }: RosterTableProps) {
   return (
     <Paper 
       sx={{ 
-        overflowX: 'auto',
         bgcolor: 'background.paper',
         boxShadow: 1,
-        borderRadius: 1
+        borderRadius: 1,
+        width: '100%',
+        overflow: 'hidden',
       }}
     >
       <Box sx={{ 
-        p: 2, 
+        p: { xs: 1.5, sm: 2 }, 
         borderBottom: 1, 
         borderColor: 'divider', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: { xs: 'flex-start', sm: 'center' }, 
         flexDirection: { xs: 'column', sm: 'row' }, 
-        gap: 2,
+        gap: { xs: 1.5, sm: 2 },
         bgcolor: 'grey.50'
       }}>
         <div>
@@ -234,7 +235,37 @@ export default function RosterTable({ players }: RosterTableProps) {
           }}
         />
       </Box>
-      <Table size="small" sx={{ minWidth: 650 }}>
+      <Box sx={{ 
+        width: '100%',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        '&::-webkit-scrollbar': {
+          height: '6px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          borderRadius: '4px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent',
+        },
+      }}>
+        <Table 
+          size="small" 
+          sx={{ 
+            minWidth: 650,
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+              py: { xs: 1, sm: 1.25 },
+              px: { xs: 1, sm: 2 },
+            },
+            '& .MuiTableHead-root .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+              py: { xs: 1, sm: 1.25 },
+              px: { xs: 1, sm: 2 },
+            },
+          }}
+        >
         <TableHead>
           <TableRow sx={{ 
             bgcolor: 'grey.100',
@@ -309,11 +340,12 @@ export default function RosterTable({ players }: RosterTableProps) {
                     <Avatar 
                       src={player.avatar_url || undefined} 
                       sx={{ 
-                        mr: 2,
-                        width: 32,
-                        height: 32,
+                        mr: { xs: 1.5, sm: 2 },
+                        width: { xs: 28, sm: 32 },
+                        height: { xs: 28, sm: 32 },
                         bgcolor: 'primary.main',
-                        color: 'primary.contrastText'
+                        color: 'primary.contrastText',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
                       }}
                     >
                       {player.avatar_url ? '' : player.gamertag.charAt(0).toUpperCase()}
@@ -375,7 +407,8 @@ export default function RosterTable({ players }: RosterTableProps) {
             </TableRow>
           )}
         </TableBody>
-      </Table>
+        </Table>
+      </Box>
     </Paper>
   );
 }
