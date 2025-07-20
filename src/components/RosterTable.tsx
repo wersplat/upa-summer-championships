@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Table,
   TableHead,
@@ -313,89 +314,194 @@ export default function RosterTable({ players }: RosterTableProps) {
         <TableBody>
           {sortedAndFilteredPlayers.length > 0 ? (
             sortedAndFilteredPlayers.map((player) => (
-              <TableRow 
-                key={player.id} 
-                hover 
-                sx={{ 
-                  '&:nth-of-type(odd)': {
-                    bgcolor: 'grey.50',
-                  },
-                  '&:hover': {
-                    bgcolor: 'primary.light',
-                    '& .MuiTableCell-root': {
-                      color: 'primary.contrastText',
+              <>
+                {/* Desktop/Tablet View */}
+                <TableRow 
+                  key={player.id} 
+                  hover 
+                  sx={{ 
+                    display: { xs: 'none', sm: 'table-row' },
+                    '&:nth-of-type(odd)': {
+                      bgcolor: 'grey.50',
                     },
-                  },
-                  '&:last-child td': {
-                    borderBottom: 0,
-                  },
-                  '& td': {
-                    borderColor: 'divider',
-                    color: 'text.primary',
-                  },
-                }}
-              >
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar 
-                      src={player.avatar_url || undefined} 
-                      sx={{ 
-                        mr: { xs: 1.5, sm: 2 },
-                        width: { xs: 28, sm: 32 },
-                        height: { xs: 28, sm: 32 },
-                        bgcolor: 'primary.main',
+                    '&:hover': {
+                      bgcolor: 'primary.light',
+                      '& .MuiTableCell-root': {
                         color: 'primary.contrastText',
-                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                      }}
-                    >
-                      {player.avatar_url ? '' : player.gamertag.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box>
-                      <Typography 
-                        variant="body2" 
+                      },
+                    },
+                    '&:last-child td': {
+                      borderBottom: 0,
+                    },
+                    '& td': {
+                      borderColor: 'divider',
+                      color: 'text.primary',
+                    },
+                    ...(player.team_rosters?.[0]?.is_captain && {
+                      bgcolor: 'rgba(255, 193, 7, 0.1)',
+                      '&:hover': {
+                        bgcolor: 'primary.light',
+                      },
+                    }),
+                  }}
+                >
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {player.team_rosters?.[0]?.is_captain && (
+                        <Box component="span" sx={{ mr: 1, color: 'warning.main', fontWeight: 'bold' }}>©</Box>
+                      )}
+                      <Avatar 
+                        src={player.avatar_url || undefined} 
                         sx={{ 
-                          fontWeight: 500,
-                          color: 'text.primary'
+                          mr: { xs: 1.5, sm: 2 },
+                          width: { xs: 28, sm: 32 },
+                          height: { xs: 28, sm: 32 },
+                          bgcolor: 'primary.main',
+                          color: 'primary.contrastText',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
                         }}
                       >
-                        {player.gamertag}
-                      </Typography>
-                      {(player.first_name || player.last_name) && (
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: 'text.secondary',
-                            lineHeight: 1.2,
-                            display: 'block'
-                          }}
-                        >
-                          {player.first_name} {player.last_name}
-                        </Typography>
-                      )}
+                        {player.avatar_url ? '' : player.gamertag.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Link href={`/players/${player.id}`} passHref>
+                          <Typography 
+                            component="a"
+                            variant="body2" 
+                            sx={{ 
+                              fontWeight: 500,
+                              color: 'inherit',
+                              textDecoration: 'none',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                              }
+                            }}
+                          >
+                            {player.gamertag}
+                          </Typography>
+                        </Link>
+                        {(player.first_name || player.last_name) && (
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: 'text.secondary',
+                              lineHeight: 1.2,
+                              display: 'block'
+                            }}
+                          >
+                            {player.first_name} {player.last_name}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  {player.position ? (
-                    <Chip 
-                      label={player.position} 
-                      size="small" 
-                      sx={{
-                        bgcolor: 'primary.main',
+                  </TableCell>
+                  <TableCell>
+                    {player.position ? (
+                      <Chip 
+                        label={player.position} 
+                        size="small" 
+                        sx={{
+                          bgcolor: 'primary.main',
+                          color: 'primary.contrastText',
+                          border: '1px solid',
+                          borderColor: 'primary.dark',
+                          '& .MuiChip-label': {
+                            px: 1,
+                          },
+                        }}
+                      />
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">-</Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>{getStatusBadge(player)}</TableCell>
+                </TableRow>
+
+                {/* Mobile View */}
+                <TableRow 
+                  key={`${player.id}-mobile`}
+                  sx={{
+                    display: { xs: 'table-row', sm: 'none' },
+                    '&:nth-of-type(odd)': {
+                      bgcolor: 'grey.50',
+                    },
+                    '&:hover': {
+                      bgcolor: 'primary.light',
+                      '& .MuiTableCell-root': {
                         color: 'primary.contrastText',
-                        border: '1px solid',
-                        borderColor: 'primary.dark',
-                        '& .MuiChip-label': {
-                          px: 1,
-                        },
-                      }}
-                    />
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">-</Typography>
-                  )}
-                </TableCell>
-                <TableCell>{getStatusBadge(player)}</TableCell>
-              </TableRow>
+                      },
+                    },
+                    ...(player.team_rosters?.[0]?.is_captain && {
+                      bgcolor: 'rgba(255, 193, 7, 0.1)',
+                      '&:hover': {
+                        bgcolor: 'primary.light',
+                      },
+                    }),
+                  }}
+                >
+                  <TableCell colSpan={3}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', py: 1 }}>
+                      <Avatar 
+                        src={player.avatar_url || undefined} 
+                        sx={{ 
+                          mr: 1.5,
+                          width: 32,
+                          height: 32,
+                          bgcolor: 'primary.main',
+                          color: 'primary.contrastText',
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        {player.avatar_url ? '' : player.gamertag.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {player.team_rosters?.[0]?.is_captain && (
+                            <Box component="span" sx={{ mr: 0.5, color: 'warning.main', fontWeight: 'bold' }}>©</Box>
+                          )}
+                          <Link href={`/players/${player.id}`} passHref>
+                            <Typography 
+                              component="a"
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 500,
+                                color: 'inherit',
+                                textDecoration: 'none',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                }
+                              }}
+                            >
+                              {player.gamertag}
+                            </Typography>
+                          </Link>
+                        </Box>
+                        {player.position && (
+                          <Chip 
+                            label={player.position} 
+                            size="small" 
+                            sx={{
+                              mt: 0.5,
+                              bgcolor: 'primary.main',
+                              color: 'primary.contrastText',
+                              border: '1px solid',
+                              borderColor: 'primary.dark',
+                              fontSize: '0.7rem',
+                              height: 20,
+                              '& .MuiChip-label': {
+                                px: 0.5,
+                              },
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </>
             ))
           ) : (
             <TableRow>

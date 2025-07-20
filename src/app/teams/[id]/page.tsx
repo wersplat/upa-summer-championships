@@ -283,19 +283,21 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
             </Box>
 
             {/* Team Header */}
-            <Grid container spacing={3} alignItems="center">
-              <Grid item>
+            <Grid container spacing={3} alignItems="center" sx={{ flexDirection: { xs: 'column', sm: 'row' }, textAlign: { xs: 'center', sm: 'left' } }}>
+              <Grid item sx={{ mb: { xs: 2, sm: 0 } }}>
                 <Box 
                   sx={{
-                    width: 120,
-                    height: 120,
+                    width: { xs: 100, sm: 120, md: 140 },
+                    height: { xs: 100, sm: 120, md: 140 },
                     borderRadius: '50%',
                     overflow: 'hidden',
                     border: '4px solid rgba(255,255,255,0.3)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: 'rgba(255,255,255,0.2)'
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    mx: 'auto',
+                    mb: { xs: 1, sm: 0 }
                   }}
                 >
                   {team.logo_url ? (
@@ -318,7 +320,7 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                         fontWeight: 'bold',
                         color: 'white',
                         lineHeight: 1,
-                        fontSize: '3rem'
+                        fontSize: { xs: '2.5rem', sm: '3rem' }
                       }}
                     >
                       {team.name.charAt(0).toUpperCase()}
@@ -326,37 +328,64 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                   )}
                 </Box>
               </Grid>
-              <Grid item xs>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+              <Grid item xs={12} sm>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: { xs: 'column', sm: 'row' }, 
+                  alignItems: { xs: 'center', sm: 'flex-start' },
+                  gap: 2, 
+                  mb: 1,
+                  justifyContent: { xs: 'center', sm: 'flex-start' }
+                }}>
                   <Typography 
                     variant="h3" 
                     component="h1" 
                     sx={{ 
                       fontWeight: 'bold',
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                      fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
+                      lineHeight: 1.2,
+                      textAlign: { xs: 'center', sm: 'left' }
                     }}
                   >
                     {team.name}
                   </Typography>
                   {team.global_rank && team.global_rank <= 10 && (
-                    <Chip
-                      label={`#${team.global_rank}`}
-                      sx={{
-                        bgcolor: team.global_rank === 1 ? 'warning.main' : team.global_rank <= 3 ? 'secondary.main' : 'primary.main',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        height: 36
-                      }}
-                    />
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: { xs: 'center', sm: 'flex-start' },
+                      width: { xs: '100%', sm: 'auto' },
+                      mb: { xs: 1, sm: 0 }
+                    }}>
+                      <Chip
+                        label={`#${team.global_rank}`}
+                        sx={{
+                          bgcolor: team.global_rank === 1 ? 'warning.main' : team.global_rank <= 3 ? 'secondary.main' : 'primary.main',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: { xs: '0.9rem', sm: '1.1rem' },
+                          height: { xs: 30, sm: 36 },
+                          px: 1
+                        }}
+                      />
+                    </Box>
                   )}
                 </Box>
                 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <LocationOn sx={{ fontSize: 20 }} />
-                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                    {team.regions?.[0]?.name || 'No Region'}
-                  </Typography>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 1, 
+                  mb: 2,
+                  justifyContent: { xs: 'center', sm: 'flex-start' },
+                  flexWrap: 'wrap'
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <LocationOn sx={{ fontSize: { xs: 18, sm: 20 }, mr: 0.5 }} />
+                    <Typography variant="h6" sx={{ opacity: 0.9, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
+                      {team.regions?.[0]?.name || 'No Region'}
+                    </Typography>
+                  </Box>
                   {team.leaderboard_tier && (
                     <Chip 
                       label={team.leaderboard_tier} 
@@ -364,53 +393,132 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                       sx={{ 
                         bgcolor: 'rgba(255,255,255,0.2)',
                         color: 'white',
-                        ml: 1
+                        ml: { xs: 0, sm: 1 },
+                        mt: { xs: 1, sm: 0 },
+                        fontSize: '0.8rem',
+                        height: 24
                       }}
                     />
                   )}
                 </Box>
 
-                {/* Quick Stats */}
-                <Grid container spacing={2} sx={{ mt: 1 }}>
+                {/* Quick Stats - Enhanced for Mobile */}
+                <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mt: { xs: 1, sm: 2 } }}>
                   <Grid item xs={6} sm={3}>
-                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <TrendingUp sx={{ fontSize: 32, mb: 1, color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main' }} />
-                      <Typography variant="h5" sx={{ fontWeight: 600, color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main' }}>
+                    <Paper sx={{ 
+                      p: { xs: 1, sm: 2 }, 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      backdropFilter: 'blur(10px)', 
+                      textAlign: 'center',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center'
+                    }}>
+                      <TrendingUp sx={{ 
+                        fontSize: { xs: 24, sm: 32 }, 
+                        mb: { xs: 0.5, sm: 1 }, 
+                        color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main' 
+                      }} />
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: team.stats.points_differential >= 0 ? 'success.main' : 'error.main',
+                          fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                        }}
+                      >
                         {team.stats.points_differential > 0 ? `+${team.stats.points_differential}` : team.stats.points_differential}
                       </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Point Diff
                       </Typography>
                     </Paper>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <EmojiEvents sx={{ fontSize: 32, mb: 1, color: 'warning.main' }} />
-                      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    <Paper sx={{ 
+                      p: { xs: 1, sm: 2 }, 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      backdropFilter: 'blur(10px)', 
+                      textAlign: 'center',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center'
+                    }}>
+                      <EmojiEvents sx={{ 
+                        fontSize: { xs: 24, sm: 32 }, 
+                        mb: { xs: 0.5, sm: 1 }, 
+                        color: 'warning.main' 
+                      }} />
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 600,
+                          fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                        }}
+                      >
                         {team.current_rp || 0}
                       </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                        Ranking Points
+                      <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        Ranking Pts
                       </Typography>
                     </Paper>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <Groups sx={{ fontSize: 32, mb: 1, color: 'success.main' }} />
-                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.main' }}>
+                    <Paper sx={{ 
+                      p: { xs: 1, sm: 2 }, 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      backdropFilter: 'blur(10px)', 
+                      textAlign: 'center',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center'
+                    }}>
+                      <Groups sx={{ 
+                        fontSize: { xs: 24, sm: 32 }, 
+                        mb: { xs: 0.5, sm: 1 }, 
+                        color: 'success.main' 
+                      }} />
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: 'success.main',
+                          fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                        }}
+                      >
                         {team.stats.wins}
                       </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Wins
                       </Typography>
                     </Paper>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', textAlign: 'center' }}>
-                      <Typography variant="h5" sx={{ fontWeight: 600, color: 'error.main' }}>
+                    <Paper sx={{ 
+                      p: { xs: 1, sm: 2 }, 
+                      bgcolor: 'rgba(255,255,255,0.1)', 
+                      backdropFilter: 'blur(10px)', 
+                      textAlign: 'center',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center'
+                    }}>
+                      <Typography 
+                        variant="h5" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          color: 'error.main',
+                          fontSize: { xs: '1.1rem', sm: '1.5rem' },
+                          mb: { xs: 0.5, sm: 1 }
+                        }}
+                      >
                         {team.stats.losses}
                       </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         Losses
                       </Typography>
                     </Paper>
