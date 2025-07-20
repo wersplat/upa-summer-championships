@@ -31,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { text: 'Bracket', href: '/bracket' },
     { text: 'Teams', href: '/teams' },
     { text: 'Players', href: '/players' },
+    { text: 'Awards', href: '/awards' },
     { text: 'FAQ', href: '/faq' },
   ];
 
