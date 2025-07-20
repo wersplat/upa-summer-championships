@@ -375,17 +375,38 @@ export default async function TeamPage({ params }: { params: { id: string } }) {
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: 1, 
+                  gap: 2, 
                   mb: 2,
                   justifyContent: { xs: 'center', sm: 'flex-start' },
                   flexWrap: 'wrap'
                 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <LocationOn sx={{ fontSize: { xs: 18, sm: 20 }, mr: 0.5 }} />
-                    <Typography variant="h6" sx={{ opacity: 0.9, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
-                      {team.regions?.[0]?.name || 'No Region'}
-                    </Typography>
-                  </Box>
+                  {/* Captain Info */}
+                  {team.players?.some(p => p.team_rosters?.[0]?.is_captain) && (
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      bgcolor: 'rgba(255, 193, 7, 0.1)',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1,
+                      border: '1px solid rgba(255, 193, 7, 0.3)'
+                    }}>
+                      <Box component="span" sx={{ color: 'warning.main', fontWeight: 'bold', mr: 0.5 }}>©</Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: 'warning.main' }}>
+                        Captain: {team.players.find(p => p.team_rosters?.[0]?.is_captain)?.gamertag}
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {/* Region Info - Moved here as secondary info */}
+                  {team.regions?.[0]?.name && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <LocationOn sx={{ fontSize: { xs: 16, sm: 18 }, mr: 0.5, color: 'grey.400' }} />
+                      <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                        {team.regions[0].name}
+                      </Typography>
+                    </Box>
+                  )}
                   {team.leaderboard_tier && (
                     <Chip 
                       label={team.leaderboard_tier} 

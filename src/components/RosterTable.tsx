@@ -54,6 +54,17 @@ export default function RosterTable({ players }: RosterTableProps) {
   
   const [searchTerm, setSearchTerm] = useState('');
 
+  const positionOrder: Record<string, number> = {
+    'Point Guard': 1,
+    'Shooting Guard': 2,
+    'Guard': 2.5, // Fallback for just 'Guard'
+    'Lock': 3,
+    'Small Forward': 3.5, // Fallback for 'Small Forward' which is similar to Lock
+    'Power Forward': 4,
+    'Center': 5,
+    'Big': 4.5, // Fallback for 'Big' which is usually PF or C
+  };
+
   const sortedAndFilteredPlayers = useMemo(() => {
     const filtered = players.filter(player => {
       const searchLower = searchTerm.toLowerCase();
@@ -66,6 +77,24 @@ export default function RosterTable({ players }: RosterTableProps) {
     });
 
     return [...filtered].sort((a, b) => {
+      // If sorting by position, use custom position order
+      if (sortConfig.key === 'position') {
+        const aPos = a.position || '';
+        const bPos = b.position || '';
+        const aOrder = positionOrder[aPos] || 99;
+        const bOrder = positionOrder[bPos] || 99;
+        
+        // If positions are different, sort by position order
+        if (aOrder !== bOrder) {
+          return sortConfig.direction === 'asc' ? aOrder - bOrder : bOrder - aOrder;
+        }
+        // If same position, sort by name
+        return sortConfig.direction === 'asc' 
+          ? a.gamertag.localeCompare(b.gamertag)
+          : b.gamertag.localeCompare(a.gamertag);
+      }
+      
+      // For other sort keys, use default sorting
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
       
@@ -76,7 +105,15 @@ export default function RosterTable({ players }: RosterTableProps) {
       // Compare values
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
+      
+      // If values are equal, sort by position then name
+      const aPos = a.position || '';
+      const bPos = b.position || '';
+      const aOrder = positionOrder[aPos] || 99;
+      const bOrder = positionOrder[bPos] || 99;
+      
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.gamertag.localeCompare(b.gamertag);
     });
   }, [players, sortConfig, searchTerm]);
 
