@@ -1,23 +1,28 @@
 # UPA Summer Championships
 
-A modern web application for tracking teams, players, and matches in the UPA Summer Championships, an NBA 2K Pro Am tournament. Built with Next.js 14, TypeScript, Tailwind CSS, and Supabase.
+A modern web application for tracking teams, players, and matches in the UPA Summer Championships, an NBA 2K Pro Am tournament. Built with Next.js 14, TypeScript, Material-UI, and Supabase.
 
-## Features
+## 🚀 Features
 
-- 🏆 Dynamic team pages with detailed statistics
-- 🎨 Dark mode support
-- ⚡ Fast page loads with static generation and incremental static regeneration
-- 📱 Fully responsive design
-- 🔍 Optimized for SEO
+- 🏆 Dynamic team pages with detailed statistics and match history
+- 📊 Real-time win/loss records and points differential tracking
+- 🏅 Player profiles with position-specific stats and rankings
+- 📅 Upcoming match schedule with group/round information
+- 🏆 Interactive tournament bracket (Challonge integration)
+- 📱 Fully responsive design with mobile-optimized views
+- 🌓 Dark/Light mode support
+- ⚡ Fast page loads with server-side rendering and client-side navigation
+- 🔍 Search and filter teams by name and region
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Database**: [Supabase](https://supabase.com/)
+- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **UI Components**: [Material-UI (MUI)](https://mui.com/)
+- **Database**: [Supabase](https://supabase.com/) with PostgreSQL
 - **Type Safety**: [TypeScript](https://www.typescriptlang.org/)
-- **Icons**: [Heroicons](https://heroicons.com/)
+- **Data Visualization**: [Recharts](https://recharts.org/)
 - **Date Handling**: [date-fns](https://date-fns.org/)
+- **Tournament Bracket**: [Challonge](https://challonge.com/) integration
 
 ## Prerequisites
 
@@ -87,23 +92,28 @@ A modern web application for tracking teams, players, and matches in the UPA Sum
    psql "your-connection-string" -f scripts/seed-db.sql
    ```
 
-## 🗃️ Database Schema
-
-The application uses the following database structure:
+## 🗃️ Database Schema (Key Tables)
 
 ### Teams
 - `id` (uuid, primary key)
 - `name` (text)
 - `logo_url` (text, nullable)
-- `region` (text, nullable)
-- `slug` (text, unique)
+- `region_id` (uuid, foreign key to regions.id)
+- `current_rp` (integer, ranking points)
+- `elo_rating` (integer, skill rating)
+- `global_rank` (integer, global leaderboard position)
+- `leaderboard_tier` (text, tier classification)
+- `wins` (integer, calculated)
+- `losses` (integer, calculated)
+- `points_differential` (integer, calculated)
 - `created_at` (timestamp with time zone)
 
 ### Players
 - `id` (uuid, primary key)
-- `gamertag` (text)
-- `position` (text, nullable)
+- `gamertag` (text, unique)
+- `position` (enum: 'Point Guard', 'Shooting Guard', 'Lock', 'Power Forward', 'Center')
 - `created_at` (timestamp with time zone)
+- `updated_at` (timestamp with time zone)
 
 ### Team Rosters
 - `id` (uuid, primary key)
@@ -116,11 +126,14 @@ The application uses the following database structure:
 - `id` (uuid, primary key)
 - `home_team_id` (uuid, foreign key to teams.id)
 - `away_team_id` (uuid, foreign key to teams.id)
-- `home_score` (integer)
-- `away_score` (integer)
+- `home_score` (integer, nullable)
+- `away_score` (integer, nullable)
 - `match_date` (timestamp with time zone)
-- `status` (text: 'scheduled' | 'completed' | 'postponed')
+- `status` (enum: 'scheduled' | 'in_progress' | 'completed' | 'postponed' | 'cancelled')
+- `round` (text, e.g., 'Group Stage', 'Quarterfinals')
+- `group_name` (text, nullable, for group stage matches)
 - `created_at` (timestamp with time zone)
+- `updated_at` (timestamp with time zone)
 
 ## Deployment
 
