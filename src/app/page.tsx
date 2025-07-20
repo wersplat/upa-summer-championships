@@ -1,6 +1,12 @@
 import { supabase } from '@/utils/supabase';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { Whatshot, Shield, Star } from '@mui/icons-material';
+import { getAwardsData } from '@/utils/awards';
+import StandardCard from '@/components/StandardCard';
+import PlayerCard from '@/components/PlayerCard';
+import { SPACING } from '@/theme/constants';
+import { AWARD_COLORS } from '@/theme/colors';
 
 export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
@@ -16,7 +22,6 @@ import {
   Button,
   Paper,
 } from '@mui/material';
-// Remove unused Team import
 
 interface MatchWithTeams {
   id: string;
@@ -72,6 +77,11 @@ interface PlayerWithRoster {
     joined_at: string;
     left_at: string | null;
     event_id: string | null;
+    teams?: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+    };
   }>;
 }
 
@@ -331,12 +341,15 @@ async function getTopPlayers(): Promise<PlayerWithRoster[]> {
 }
 
 export default async function Home() {
-  const [recent, upcoming, topTeams, topPlayers] = await Promise.all([
+  const [recent, upcoming, topTeams, , awardsData] = await Promise.all([
     getRecentMatches(),
     getUpcomingMatches(),
     getTopTeams(),
-    getTopPlayers()
+    getTopPlayers(), // Keep this for potential future use
+    getAwardsData()
   ]);
+
+  const { omvpCandidates, dmvpCandidates, rookieCandidates } = awardsData;
 
 
 
@@ -662,96 +675,95 @@ export default async function Home() {
       </Box>
     </Paper>
 
-      {/* Top Players Section */}
+      {/* Tournament Awards Races Section */}
       <Box sx={{ mb: 6 }}>
-        <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 3 }}>
-          Featured Players
-        </Typography>
-        <Paper sx={{ p: 3, bgcolor: 'background.paper' }}>
-          <Grid container spacing={2}>
-            {topPlayers.slice(0, 8).map((player) => {
-              const rosterInfo = player.team_rosters?.[0];
-              return (
-                <Grid item xs={12} sm={6} md={3} key={player.id}>
-                  <Link 
-                    href={`/players/${player.id}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        p: 2,
-                        borderRadius: 1,
-                        bgcolor: 'grey.50',
-                        transition: 'all 0.2s ease-in-out',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          bgcolor: 'primary.light',
-                          '& .MuiTypography-root': {
-                            color: 'primary.contrastText',
-                          },
-                        },
-                      }}
-                    >
-                    <Avatar 
-                      sx={{ 
-                        mr: 2,
-                        width: 40,
-                        height: 40,
-                        bgcolor: 'primary.main',
-                        color: 'primary.contrastText'
-                      }}
-                    >
-                      {player.gamertag.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontWeight: 600,
-                          color: 'text.primary',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        {player.gamertag}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-                        {player.position && (
-                          <Chip 
-                            label={player.position} 
-                            size="small" 
-                            sx={{
-                              fontSize: '0.7rem',
-                              height: 20,
-                              bgcolor: 'primary.main',
-                              color: 'primary.contrastText',
-                            }}
-                          />
-                        )}
-                        {rosterInfo?.is_captain && (
-                          <Chip 
-                            label="C" 
-                            size="small" 
-                            sx={{
-                              fontSize: '0.7rem',
-                              height: 20,
-                              bgcolor: 'warning.main',
-                              color: 'warning.contrastText',
-                            }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-                    </Box>
-                  </Link>
-                </Grid>
-              );
-            })}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Tournament Awards Races
+          </Typography>
+          <Link href="/awards" style={{ textDecoration: 'none' }}>
+            <Typography variant="body2" sx={{ color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}>
+              View Full Awards Race →
+            </Typography>
+          </Link>
+        </Box>
+        
+        <Grid container spacing={3}>
+          {/* Offensive MVP */}
+          <Grid item xs={12} md={4}>
+            <StandardCard
+              title="Offensive MVP"
+              icon={<Whatshot color="error" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
+            >
+              {omvpCandidates.map((player, index) => (
+                <PlayerCard
+                  key={player.id}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.offensive_rating}
+                  ratingColor={index === 0 ? 'primary' : 'default'}
+                  avatarColor="primary.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                />
+              ))}
+            </StandardCard>
           </Grid>
-        </Paper>
+
+          {/* Defensive MVP */}
+          <Grid item xs={12} md={4}>
+            <StandardCard
+              title="Defensive MVP"
+              icon={<Shield color="info" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
+            >
+              {dmvpCandidates.map((player, index) => (
+                <PlayerCard
+                  key={`def-${player.id}`}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.defensive_rating}
+                  ratingColor={index === 0 ? 'info' : 'default'}
+                  avatarColor="info.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                />
+              ))}
+            </StandardCard>
+          </Grid>
+
+          {/* Rookie of Tournament */}
+          <Grid item xs={12} md={4}>
+            <StandardCard
+              title="Rookie of Tournament"
+              icon={<Star color="warning" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
+            >
+              {rookieCandidates.map((player, index) => (
+                <PlayerCard
+                  key={`rookie-${player.id}`}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.rookie_rating}
+                  ratingColor={index === 0 ? 'warning' : 'default'}
+                  avatarColor="warning.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                />
+              ))}
+            </StandardCard>
+          </Grid>
+        </Grid>
       </Box>
 
       {/* Recent Results Section */}

@@ -92,8 +92,10 @@ export default function TeamHeader({ team }: TeamHeaderProps) {
                 {team.stats && (
                   <div className="bg-white/20 p-3 rounded-lg">
                     <div className="text-xs font-medium text-white/80">Record</div>
-                    <div className="text-lg font-bold text-gold">
-                      {team.stats.wins}-{team.stats.losses}{team.stats.games_played > team.stats.wins + team.stats.losses ? `-${team.stats.games_played - team.stats.wins - team.stats.losses}` : ''}
+                    <div className="flex items-center space-x-1">
+                      <span className="text-lg font-bold text-gold">{team.stats.wins}</span>
+                      <span className="text-white/80">-</span>
+                      <span className="text-lg font-bold text-gold">{team.stats.losses}</span>
                     </div>
                   </div>
                 )}
