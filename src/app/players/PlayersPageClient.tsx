@@ -148,15 +148,53 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
           comparison = a.gamertag.localeCompare(b.gamertag);
           break;
         case 'team':
-          const getTeamLogo = (team?: TeamInfo) => team?.name || '';
-          const teamA = getTeamLogo(a.teams?.[0]);
-          const teamB = getTeamLogo(b.teams?.[0]);
+          const getTeamName = (team?: TeamInfo) => team?.name || '';
+          const teamA = getTeamName(a.teams?.[0]);
+          const teamB = getTeamName(b.teams?.[0]);
           comparison = teamA.localeCompare(teamB);
+          break;
+        case 'position':
+          comparison = (a.position || '').localeCompare(b.position || '');
           break;
         case 'ppg':
           comparison = (a.stats?.points_per_game || 0) - (b.stats?.points_per_game || 0);
           break;
-        // Add other stat comparisons as needed
+        case 'rpg':
+          comparison = (a.stats?.rebounds_per_game || 0) - (b.stats?.rebounds_per_game || 0);
+          break;
+        case 'apg':
+          comparison = (a.stats?.assists_per_game || 0) - (b.stats?.assists_per_game || 0);
+          break;
+        case 'spg':
+          comparison = (a.stats?.steals_per_game || 0) - (b.stats?.steals_per_game || 0);
+          break;
+        case 'bpg':
+          comparison = (a.stats?.blocks_per_game || 0) - (b.stats?.blocks_per_game || 0);
+          break;
+        case 'fg_pct':
+          comparison = (a.stats?.field_goal_percentage || 0) - (b.stats?.field_goal_percentage || 0);
+          break;
+        case 'ft_pct':
+          comparison = (a.stats?.free_throw_percentage || 0) - (b.stats?.free_throw_percentage || 0);
+          break;
+        case '3p_pct':
+          comparison = (a.stats?.three_point_percentage || 0) - (b.stats?.three_point_percentage || 0);
+          break;
+        case 'tpg':
+          comparison = (a.stats?.turnovers_per_game || 0) - (b.stats?.turnovers_per_game || 0);
+          break;
+        case 'fpg':
+          comparison = (a.stats?.fouls_per_game || 0) - (b.stats?.fouls_per_game || 0);
+          break;
+        case 'mpg':
+          comparison = (a.stats?.minutes_per_game || 0) - (b.stats?.minutes_per_game || 0);
+          break;
+        case 'plus_minus':
+          comparison = (a.stats?.plus_minus || 0) - (b.stats?.plus_minus || 0);
+          break;
+        case 'performance_score':
+          comparison = (a.performance_score || 0) - (b.performance_score || 0);
+          break;
         default:
           comparison = 0;
       }
@@ -171,7 +209,7 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
     setSortField(field);
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
 
@@ -348,14 +386,22 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                     Player
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Position</TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <TableSortLabel
                     active={sortField === 'team'}
                     direction={sortField === 'team' ? sortDirection : 'asc'}
                     onClick={() => handleSort('team')}
                   >
                     Team
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="center">
+                  <TableSortLabel
+                    active={sortField === 'position'}
+                    direction={sortField === 'position' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('position')}
+                  >
+                    Position
                   </TableSortLabel>
                 </TableCell>
                 <TableCell align="right">
@@ -367,13 +413,69 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                     PPG
                   </TableSortLabel>
                 </TableCell>
-                <TableCell align="right">RPG</TableCell>
-                <TableCell align="right">APG</TableCell>
-                <TableCell align="right">SPG</TableCell>
-                <TableCell align="right">BPG</TableCell>
-                <TableCell align="right">FG%</TableCell>
-                <TableCell align="right">3P%</TableCell>
-                <TableCell align="right">FT%</TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'rpg'}
+                    direction={sortField === 'rpg' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('rpg')}
+                  >
+                    RPG
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'apg'}
+                    direction={sortField === 'apg' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('apg')}
+                  >
+                    APG
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'spg'}
+                    direction={sortField === 'spg' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('spg')}
+                  >
+                    SPG
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'bpg'}
+                    direction={sortField === 'bpg' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('bpg')}
+                  >
+                    BPG
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'fg_pct'}
+                    direction={sortField === 'fg_pct' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('fg_pct')}
+                  >
+                    FG%
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === 'ft_pct'}
+                    direction={sortField === 'ft_pct' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('ft_pct')}
+                  >
+                    FT%
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortField === '3p_pct'}
+                    direction={sortField === '3p_pct' ? sortDirection : 'desc'}
+                    onClick={() => handleSort('3p_pct')}
+                  >
+                    3P%
+                  </TableSortLabel>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -413,33 +515,42 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                         </Link>
                       </Box>
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
+                      {player.teams?.[0]?.logo_url ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <Avatar 
+                            src={player.teams[0].logo_url} 
+                            alt={player.teams[0].name}
+                            title={player.teams[0].name}
+                            sx={{ 
+                              width: { xs: 24, sm: 28 }, 
+                              height: { xs: 24, sm: 28 },
+                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                              bgcolor: 'background.paper',
+                              '& img': {
+                                objectFit: 'contain',
+                                p: 0.5
+                              }
+                            }}
+                          />
+                        </Box>
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell align="center">
                       {player.position ? (
                         <Chip 
                           label={player.position} 
                           size="small" 
                           color={getPositionColor(player.position) as any}
+                          sx={{ 
+                            minWidth: 40,
+                            '& .MuiChip-label': {
+                              px: 1,
+                              fontSize: '0.75rem',
+                              fontWeight: 500
+                            }
+                          }}
                         />
-                      ) : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {player.teams?.[0] ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {player.teams[0].logo_url && (
-                            <Avatar 
-                              src={player.teams[0].logo_url} 
-                              alt={player.teams[0].name}
-                              sx={{ 
-                                width: { xs: 20, sm: 24 }, 
-                                height: { xs: 20, sm: 24 },
-                                fontSize: { xs: '0.625rem', sm: '0.75rem' }
-                              }}
-                            />
-                          )}
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                            {player.teams[0].name}
-                          </Typography>
-                        </Box>
                       ) : '-'}
                     </TableCell>
                     <TableCell align="right">{renderStatCell(player.stats?.points_per_game)}</TableCell>
