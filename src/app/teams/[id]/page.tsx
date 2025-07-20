@@ -122,7 +122,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       throw rosterDataError;
     }
 
-    // Get recent matches from the specific event (last 5), fallback to all matches if none found
+    // Get all matches for the team in the specific event
     let { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
@@ -138,12 +138,13 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       `)
       .eq('event_id', eventId)
       .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
-      .order('played_at', { ascending: false })
-      .limit(5);
+      .not('score_a', 'is', null)  // Only include completed matches
+      .not('score_b', 'is', null)  // Only include completed matches
+      .order('played_at', { ascending: false });
 
-    // If no matches found for the specific event, get all matches for the team
+    // If no matches found for the specific event, get all completed matches for the team
     if (!matchesData || matchesData.length === 0) {
-      console.log(`No matches found for team ${teamData.id} in event ${eventId}, showing all matches`);
+      console.log(`No matches found for team ${teamData.id} in event ${eventId}, showing all completed matches`);
       const { data: allMatchesData, error: allMatchesError } = await supabase
         .from('matches')
         .select(`
@@ -158,8 +159,9 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
           team_b:team_b_id (id, name, logo_url)
         `)
         .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
-        .order('played_at', { ascending: false })
-        .limit(5);
+        .not('score_a', 'is', null)  // Only include completed matches
+        .not('score_b', 'is', null)  // Only include completed matches
+        .order('played_at', { ascending: false });
       
       matchesData = allMatchesData;
       matchesError = allMatchesError;
@@ -175,8 +177,8 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
     }));
 
     // Calculate team stats
-    const gamesPlayed = processedMatches?.length || 0;
     let wins = 0;
+    let losses = 0;
     let pointsFor = 0;
     let pointsAgainst = 0;
     
@@ -190,9 +192,13 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       
       if (teamScore > opponentScore) {
         wins++;
+      } else if (teamScore < opponentScore) {
+        losses++;
       }
+      // If scores are equal, it's a tie - we don't increment wins or losses
     });
     
+    const gamesPlayed = wins + losses; // Only count games with a win or loss, excluding ties
     const pointsDifferential = pointsFor - pointsAgainst;
 
 

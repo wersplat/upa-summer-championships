@@ -45,6 +45,9 @@ interface TeamWithRegion {
     name: string;
   }>;
   captain: TeamCaptain | null;
+  wins?: number;
+  losses?: number;
+  points_differential?: number;
 }
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
@@ -55,7 +58,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
     router.prefetch(`/teams/${teamId}`);
   }, [router]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'elo' | 'rp' | 'rank' | 'name'>('elo');
+  const [sortBy, setSortBy] = useState<'wins' | 'rp' | 'rank' | 'name'>('wins');
   const [filterRegion, setFilterRegion] = useState<string>('all');
 
   // Get unique regions for filter
@@ -79,8 +82,11 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
 
     return filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'elo':
-          return (b.elo_rating || 0) - (a.elo_rating || 0);
+        case 'wins':
+          // Default to 0 if wins is not available
+          const aWins = a.wins || 0;
+          const bWins = b.wins || 0;
+          return bWins - aWins;
         case 'rp':
           return (b.current_rp || 0) - (a.current_rp || 0);
         case 'rank':
@@ -247,7 +253,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                 <Select
                   value={sortBy}
                   label="Sort by"
-                  onChange={(e) => setSortBy(e.target.value as 'elo' | 'rp' | 'rank' | 'name')}
+                  onChange={(e) => setSortBy(e.target.value as 'wins' | 'rp' | 'rank' | 'name')}
                 >
                   <MenuItem value="wins">Win Record</MenuItem>
                   <MenuItem value="rp">Ranking Points</MenuItem>
@@ -421,7 +427,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                             Record
                           </Typography>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            W-L
+                            {`${team.wins || 0}-${team.losses || 0}`}
                           </Typography>
                         </Box>
                       </Grid>
@@ -430,8 +436,14 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                           <Typography variant="caption" color="text.secondary" display="block">
                             Point Diff
                           </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 600, color: 'secondary.main' }}>
-                            +/-
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontWeight: 600, 
+                              color: (team.points_differential || 0) >= 0 ? 'success.main' : 'error.main' 
+                            }}
+                          >
+                            {team.points_differential && team.points_differential > 0 ? '+' : ''}{team.points_differential || 0}
                           </Typography>
                         </Box>
                       </Grid>

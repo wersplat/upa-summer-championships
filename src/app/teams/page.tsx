@@ -23,6 +23,9 @@ interface TeamWithRegion {
     name: string;
   }>;
   captain: TeamCaptain | null;
+  wins: number;
+  losses: number;
+  points_differential: number;
 }
 
 async function getTeams(): Promise<TeamWithRegion[]> {
@@ -94,7 +97,7 @@ async function getTeams(): Promise<TeamWithRegion[]> {
         throw allTeamsError;
       }
 
-      // Process fallback teams to include captain information
+      // Process fallback teams to include captain information and default stats
       return (allTeams || []).map(team => {
         // Find the captain from team_rosters
         const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
@@ -105,30 +108,61 @@ async function getTeams(): Promise<TeamWithRegion[]> {
           captain: captainPlayer ? {
             id: captainPlayer.id,
             gamertag: captainPlayer.gamertag
-          } : null
+          } : null,
+          wins: 0,
+          losses: 0,
+          points_differential: 0
         };
       });
     }
 
-    // Process teams to include captain information
-    const teamsWithCaptains = (teams || []).map(team => {
+    // Process teams to include captain information and calculate stats
+    const teamsWithStats = await Promise.all((teams || []).map(async (team) => {
       // Find the captain from team_rosters
       const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
       const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
+      
+      // Get all matches for this team to calculate W-L and points differential
+      const { data: matchesData } = await supabase
+        .from('matches')
+        .select('*')
+        .or(`team_a_id.eq.${team.id},team_b_id.eq.${team.id}`)
+        .not('score_a', 'is', null)
+        .not('score_b', 'is', null);
+      
+      // Calculate W-L and points differential
+      let wins = 0;
+      let pointsFor = 0;
+      let pointsAgainst = 0;
+      
+      matchesData?.forEach(match => {
+        const isTeamA = match.team_a_id === team.id;
+        const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
+        const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
+        
+        pointsFor += teamScore;
+        pointsAgainst += opponentScore;
+        
+        if (teamScore > opponentScore) wins++;
+      });
+      
+      const losses = (matchesData?.length || 0) - wins;
+      const points_differential = pointsFor - pointsAgainst;
       
       return {
         ...team,
         captain: captainPlayer ? {
           id: captainPlayer.id,
           gamertag: captainPlayer.gamertag
-        } : null
+        } : null,
+        wins,
+        losses,
+        points_differential
       };
-    });
+    }));
 
-    // Sort by RP (descending)
-    return teamsWithCaptains.sort((a, b) => 
-      (b.current_rp || 0) - (a.current_rp || 0)
-    );
+    // Sort by wins (descending) by default
+    return teamsWithStats.sort((a, b) => b.wins - a.wins);
   } catch (error) {
     console.error('Error in getTeams:', error);
     return [];

@@ -1,6 +1,9 @@
 import { supabase } from '@/utils/supabase';
 import Link from 'next/link';
 import { format } from 'date-fns';
+
+export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
+
 import {
   Card,
   CardHeader,
@@ -24,6 +27,7 @@ interface MatchWithTeams {
   score_a: number | null;
   score_b: number | null;
   played_at: string | null;
+  round?: string; // Optional round/group information
 }
 
 interface TeamCaptain {
@@ -72,13 +76,9 @@ interface PlayerWithRoster {
 }
 
 async function getRecentMatches(): Promise<MatchWithTeams[]> {
-  const { data, error } = await supabase
+  const { data: matches, error } = await supabase
     .from('matches')
-    .select(
-      `id, team_a_id, team_b_id, score_a, score_b, played_at,
-       team_a:team_a_id (id, name, logo_url),
-       team_b:team_b_id (id, name, logo_url)`
-    )
+    .select('*')
     .not('score_a', 'is', null)
     .not('score_b', 'is', null)
     .order('played_at', { ascending: false })
@@ -89,22 +89,38 @@ async function getRecentMatches(): Promise<MatchWithTeams[]> {
     return [];
   }
 
-  // Map the response to MatchWithTeams interface
-  return (data || []).map(match => ({
+  if (!matches || matches.length === 0) return [];
+
+  // Get unique team IDs
+  const teamIds = new Set<string>();
+  matches.forEach(match => {
+    if (match.team_a_id) teamIds.add(match.team_a_id);
+    if (match.team_b_id) teamIds.add(match.team_b_id);
+  });
+
+  // Fetch all teams data in a single query
+  const { data: teamsData } = await supabase
+    .from('teams')
+    .select('id, name, logo_url')
+    .in('id', Array.from(teamIds));
+
+  // Create a map of team IDs to team data
+  const teamsMap = new Map(
+    teamsData?.map(team => [team.id, { id: team.id, name: team.name, logo_url: team.logo_url }]) || []
+  );
+
+  // Map matches with team data
+  return matches.map(match => ({
     ...match,
-    team_a: match.team_a?.[0] || null,
-    team_b: match.team_b?.[0] || null
+    team_a: match.team_a_id ? teamsMap.get(match.team_a_id) || null : null,
+    team_b: match.team_b_id ? teamsMap.get(match.team_b_id) || null : null
   }));
 }
 
 async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
-  const { data, error } = await supabase
+  const { data: matches, error } = await supabase
     .from('matches')
-    .select(
-      `id, team_a_id, team_b_id, score_a, score_b, played_at,
-       team_a:team_a_id (id, name, logo_url),
-       team_b:team_b_id (id, name, logo_url)`
-    )
+    .select('*')
     .is('score_a', null)
     .is('score_b', null)
     .order('played_at', { ascending: true })
@@ -115,11 +131,31 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
     return [];
   }
 
-  // Map the response to MatchWithTeams interface
-  return (data || []).map(match => ({
+  if (!matches || matches.length === 0) return [];
+
+  // Get unique team IDs
+  const teamIds = new Set<string>();
+  matches.forEach(match => {
+    if (match.team_a_id) teamIds.add(match.team_a_id);
+    if (match.team_b_id) teamIds.add(match.team_b_id);
+  });
+
+  // Fetch all teams data in a single query
+  const { data: teamsData } = await supabase
+    .from('teams')
+    .select('id, name, logo_url')
+    .in('id', Array.from(teamIds));
+
+  // Create a map of team IDs to team data
+  const teamsMap = new Map(
+    teamsData?.map(team => [team.id, { id: team.id, name: team.name, logo_url: team.logo_url }]) || []
+  );
+
+  // Map matches with team data
+  return matches.map(match => ({
     ...match,
-    team_a: match.team_a?.[0] || null,
-    team_b: match.team_b?.[0] || null
+    team_a: match.team_a_id ? teamsMap.get(match.team_a_id) || null : null,
+    team_b: match.team_b_id ? teamsMap.get(match.team_b_id) || null : null
   }));
 }
 
@@ -834,7 +870,7 @@ export default async function Home() {
               <Box component="tr">
                 <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Home</Box>
                 <Box component="th" sx={{ p: 2, textAlign: 'left', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Away</Box>
-                <Box component="th" sx={{ p: 2, textAlign: 'center', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Score</Box>
+                <Box component="th" sx={{ p: 2, textAlign: 'center', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Group/Round</Box>
                 <Box component="th" sx={{ p: 2, textAlign: 'right', fontWeight: 600, color: 'text.secondary', fontSize: '0.875rem' }}>Tip Off</Box>
               </Box>
             </Box>
@@ -850,13 +886,7 @@ export default async function Home() {
               ) : (
                 upcoming.map((match) => {
                   const date = match.played_at ? new Date(match.played_at) : null;
-                  const score = match.score_a !== null && match.score_b !== null ? (
-                    <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 600, color: 'text.primary' }}>
-                      {match.score_a}-{match.score_b}
-                    </Typography>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">vs</Typography>
-                  );
+                  const roundInfo = match.round || 'Group Stage';
 
                   return (
                     <Box 
@@ -873,7 +903,7 @@ export default async function Home() {
                       <Box component="td" sx={{ p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar 
-                            src={match.team_a?.logo_url || undefined} 
+                            src={match.team_a?.logo_url || ''} 
                             sx={{ 
                               width: 32, 
                               height: 32, 
@@ -882,7 +912,7 @@ export default async function Home() {
                               color: 'text.primary'
                             }}
                           >
-                            {match.team_a?.logo_url ? '' : match.team_a?.name?.[0]}
+                            {match.team_a?.logo_url ? null : (match.team_a?.name?.[0] || '?')}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
                             {match.team_a?.name}
@@ -892,7 +922,7 @@ export default async function Home() {
                       <Box component="td" sx={{ p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar 
-                            src={match.team_b?.logo_url || undefined} 
+                            src={match.team_b?.logo_url || ''} 
                             sx={{ 
                               width: 32, 
                               height: 32, 
@@ -901,7 +931,7 @@ export default async function Home() {
                               color: 'text.primary'
                             }}
                           >
-                            {match.team_b?.logo_url ? '' : match.team_b?.name?.[0]}
+                            {match.team_b?.logo_url ? null : (match.team_b?.name?.[0] || '?')}
                           </Avatar>
                           <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
                             {match.team_b?.name}
@@ -909,7 +939,9 @@ export default async function Home() {
                         </Box>
                       </Box>
                       <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
-                        {score}
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>
+                          {roundInfo}
+                        </Typography>
                       </Box>
                       <Box component="td" sx={{ p: 2, textAlign: 'right' }}>
                         <Typography variant="body2" color="text.secondary">
