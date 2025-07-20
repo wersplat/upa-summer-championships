@@ -58,10 +58,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 height: 40,
                 width: 'auto',
                 mr: 1,
-                display: { xs: 'none', sm: 'block' }
+                display: { xs: 'none', sm: 'block' },
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.9,
+                },
               }}
             />
-            <Typography variant="h6" sx={{ fontWeight: 700, display: { xs: 'none', md: 'block' } }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, display: { xs: 'none', md: 'block' }, '&:hover': { opacity: 0.9 } }}>
               UPA Summer Championships
             </Typography>
           </Box>
@@ -107,22 +111,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
         }}
       >
-        <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+        <Box sx={{ textAlign: 'center', py: 2 }}>
+          <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <Box
               component="img"
               src="/UPA-Summer-Championships.png"
               alt="UPA Summer Championships"
               sx={{
-                height: 60,
+                height: 40,
                 width: 'auto',
-                mb: 1
+                mx: 'auto',
+                mb: 1,
+                display: 'block',
+                cursor: 'pointer',
+                '&:hover': {
+                  opacity: 0.9,
+                },
               }}
             />
             <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center' }}>
               UPA Summer Championships
             </Typography>
-          </Box>
+          </Link>
           <Divider />
           <List>
             {menuItems.map((item) => (
