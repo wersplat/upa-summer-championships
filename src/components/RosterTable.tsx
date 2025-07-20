@@ -48,7 +48,7 @@ interface RosterTableProps {
 
 export default function RosterTable({ players }: RosterTableProps) {
   const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: 'gamertag',
+    key: 'position',
     direction: 'asc',
   });
   

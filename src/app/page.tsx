@@ -26,11 +26,12 @@ interface MatchWithTeams {
   played_at: string | null;
 }
 
+interface TeamCaptain {
+  id: string;
+  gamertag: string;
+}
+
 interface TeamWithRegion {
-  regions: Array<{
-    id: string;
-    name: string;
-  }>;
   id: string;
   name: string;
   logo_url: string | null;
@@ -40,6 +41,11 @@ interface TeamWithRegion {
   global_rank: number | null;
   leaderboard_tier: string | null;
   created_at: string;
+  regions: Array<{
+    id: string;
+    name: string;
+  }>;
+  captain: TeamCaptain | null;
 }
 
 interface PlayerWithRoster {
@@ -118,7 +124,7 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
 }
 
 // Extend the base TeamWithRegion but omit elo_rating since we're not using it
-type TeamWithStats = Omit<TeamWithRegion, 'elo_rating'> & {
+interface TeamWithStats extends Omit<TeamWithRegion, 'elo_rating'> {
   stats: {
     wins: number;
     losses: number;
@@ -126,6 +132,7 @@ type TeamWithStats = Omit<TeamWithRegion, 'elo_rating'> & {
     points_against: number;
     points_differential: number;
   };
+  captain: TeamCaptain | null;
 }
 
 async function getTopTeams(): Promise<TeamWithStats[]> {
@@ -169,9 +176,18 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
         global_rank,
         leaderboard_tier,
         created_at,
-        regions (id, name)
+        regions (id, name),
+        team_rosters!inner (
+          id,
+          is_captain,
+          players (
+            id,
+            gamertag
+          )
+        )
       `)
       .in('id', Array.from(uniqueTeamIds))
+      .eq('team_rosters.is_captain', true)
       .order('current_rp', { ascending: false })
       .limit(6);
 
@@ -185,34 +201,38 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
       .select('*')
       .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`);
 
-    // Calculate stats for each team
-    const teamsWithStats = await Promise.all(teams.map(async (team) => {
-      const teamMatches = matches?.filter(match => 
+    // Calculate stats and captain to each team
+    const teamsWithStats = teams.map(team => {
+      const teamMatches = (matches || []).filter(match => 
         match.team_a_id === team.id || match.team_b_id === team.id
-      ) || [];
-
-      let wins = 0;
-      let pointsFor = 0;
-      let pointsAgainst = 0;
-
-      teamMatches.forEach(match => {
-        const isTeamA = match.team_a_id === team.id;
-        const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
-        const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
-        
-        pointsFor += teamScore;
-        pointsAgainst += opponentScore;
-        
-        if (teamScore > opponentScore) {
-          wins++;
-        }
-      });
-
+      );
+      
+      const wins = teamMatches.filter(match => {
+        if (match.team_a_id === team.id) return (match.score_a || 0) > (match.score_b || 0);
+        return (match.score_b || 0) > (match.score_a || 0);
+      }).length;
+      
+      const pointsFor = teamMatches.reduce((total, match) => {
+        return total + (match.team_a_id === team.id ? (match.score_a || 0) : (match.score_b || 0));
+      }, 0);
+      
+      const pointsAgainst = teamMatches.reduce((total, match) => {
+        return total + (match.team_a_id === team.id ? (match.score_b || 0) : (match.score_a || 0));
+      }, 0);
+      
       const losses = teamMatches.length - wins;
       const pointsDifferential = pointsFor - pointsAgainst;
-
+      
+      // Find the captain from team_rosters
+      const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
+      const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
+      
       return {
         ...team,
+        captain: captainPlayer ? {
+          id: captainPlayer.id,
+          gamertag: captainPlayer.gamertag
+        } : null,
         stats: {
           wins,
           losses,
@@ -221,7 +241,7 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
           points_differential: pointsDifferential
         }
       };
-    }));
+    });
 
     // Sort by wins, then point differential
     return teamsWithStats.sort((a, b) => {
@@ -525,9 +545,29 @@ export default async function Home() {
                     </Typography>
                   }
                   subheader={
-                    <Typography variant="body2" color="text.secondary">
-                      {team.regions?.[0]?.name || 'No Region'}
-                    </Typography>
+                    team.captain ? (
+                      <Box 
+                        sx={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center',
+                          gap: 0.5,
+                          bgcolor: 'rgba(255, 193, 7, 0.1)',
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          border: '1px solid rgba(255, 193, 7, 0.3)'
+                        }}
+                      >
+                        <Box component="span" sx={{ color: 'warning.main', fontSize: '0.8em', lineHeight: 1 }}>©</Box>
+                        <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                          {team.captain.gamertag}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.8rem' }}>
+                        No Captain
+                      </Typography>
+                    )
                   }
                 />
                 <CardContent sx={{ pt: 0 }}>

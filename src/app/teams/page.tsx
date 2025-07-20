@@ -3,6 +3,11 @@ import TeamsPageClient from './TeamsPageClient';
 
 export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
+interface TeamCaptain {
+  id: string;
+  gamertag: string;
+}
+
 interface TeamWithRegion {
   id: string;
   name: string;
@@ -17,61 +22,14 @@ interface TeamWithRegion {
     id: string;
     name: string;
   }>;
+  captain: TeamCaptain | null;
 }
 
 async function getTeams(): Promise<TeamWithRegion[]> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
     
-    // Get teams that have roster entries for the specific event
-    const { data: teamRosters, error: rosterError } = await supabase
-      .from('team_rosters')
-      .select('team_id')
-      .eq('event_id', eventId);
-
-    if (rosterError) {
-      console.error('Error fetching team rosters:', rosterError);
-      throw rosterError;
-    }
-
-    // Extract unique team IDs from rosters
-    const uniqueTeamIds = new Set<string>();
-    teamRosters?.forEach(roster => {
-      if (roster.team_id) uniqueTeamIds.add(roster.team_id);
-    });
-
-    console.log(`Found ${uniqueTeamIds.size} teams with rosters for event ${eventId}`);
-
-    // If no teams found for this event, fall back to showing all teams
-    if (uniqueTeamIds.size === 0) {
-      console.log('No team rosters found for event, showing all teams as fallback');
-      
-      const { data: allTeams, error: allTeamsError } = await supabase
-        .from('teams')
-        .select(`
-          id,
-          name,
-          logo_url,
-          region_id,
-          current_rp,
-          elo_rating,
-          global_rank,
-          leaderboard_tier,
-          created_at,
-          regions (id, name)
-        `)
-        .order('elo_rating', { ascending: false });
-      
-      if (allTeamsError) {
-        console.error('Error fetching all teams:', allTeamsError);
-        throw allTeamsError;
-      }
-      
-      console.log(`Returning ${allTeams?.length || 0} teams from fallback`);
-      return allTeams || [];
-    }
-
-    // Fetch team details for teams that have rosters in the event
+    // Get teams that have roster entries for the specific event, including captain info
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -84,18 +42,93 @@ async function getTeams(): Promise<TeamWithRegion[]> {
         global_rank,
         leaderboard_tier,
         created_at,
-        regions (id, name)
+        regions (id, name),
+        team_rosters!inner (
+          id,
+          is_captain,
+          players (
+            id,
+            gamertag
+          )
+        )
       `)
-      .in('id', Array.from(uniqueTeamIds))
-      .order('elo_rating', { ascending: false });
+      .eq('team_rosters.event_id', eventId)
+      .eq('team_rosters.is_captain', true);
 
     if (error) {
-      console.error('Error fetching teams:', error);
+      console.error('Error fetching teams with rosters:', error);
       throw error;
     }
-    
-    console.log(`Successfully fetched ${teams?.length || 0} teams for event`);
-    return teams || [];
+
+    console.log(`Found ${teams?.length || 0} teams with rosters for event ${eventId}`);
+
+    // If no teams found for this event, fall back to showing all teams
+    if (!teams || teams.length === 0) {
+      console.log('No teams found for the event, falling back to all teams');
+      const { data: allTeams, error: allTeamsError } = await supabase
+        .from('teams')
+        .select(`
+          id,
+          name,
+          logo_url,
+          region_id,
+          current_rp,
+          elo_rating,
+          global_rank,
+          leaderboard_tier,
+          created_at,
+          regions (id, name),
+          team_rosters (
+            id,
+            is_captain,
+            players (
+              id,
+              gamertag
+            )
+          )
+        `)
+        .order('current_rp', { ascending: false });
+
+      if (allTeamsError) {
+        console.error('Error fetching all teams:', allTeamsError);
+        throw allTeamsError;
+      }
+
+      // Process fallback teams to include captain information
+      return (allTeams || []).map(team => {
+        // Find the captain from team_rosters
+        const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
+        const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
+        
+        return {
+          ...team,
+          captain: captainPlayer ? {
+            id: captainPlayer.id,
+            gamertag: captainPlayer.gamertag
+          } : null
+        };
+      });
+    }
+
+    // Process teams to include captain information
+    const teamsWithCaptains = (teams || []).map(team => {
+      // Find the captain from team_rosters
+      const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
+      const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
+      
+      return {
+        ...team,
+        captain: captainPlayer ? {
+          id: captainPlayer.id,
+          gamertag: captainPlayer.gamertag
+        } : null
+      };
+    });
+
+    // Sort by RP (descending)
+    return teamsWithCaptains.sort((a, b) => 
+      (b.current_rp || 0) - (a.current_rp || 0)
+    );
   } catch (error) {
     console.error('Error in getTeams:', error);
     return [];

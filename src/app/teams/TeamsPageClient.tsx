@@ -25,6 +25,11 @@ import {
 } from '@mui/material';
 import { Search, EmojiEvents, TrendingUp, Groups } from '@mui/icons-material';
 
+interface TeamCaptain {
+  id: string;
+  gamertag: string;
+}
+
 interface TeamWithRegion {
   id: string;
   name: string;
@@ -39,6 +44,7 @@ interface TeamWithRegion {
     id: string;
     name: string;
   }>;
+  captain: TeamCaptain | null;
 }
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
@@ -379,9 +385,29 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                     </Typography>
                   }
                   subheader={
-                    <Typography variant="body2" color="text.secondary">
-                      {team.regions?.[0]?.name || 'No Region'}
-                    </Typography>
+                    team.captain ? (
+                      <Box 
+                        sx={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center',
+                          gap: 0.5,
+                          bgcolor: 'rgba(255, 193, 7, 0.1)',
+                          px: 1,
+                          py: 0.5,
+                          borderRadius: 1,
+                          border: '1px solid rgba(255, 193, 7, 0.3)'
+                        }}
+                      >
+                        <Box component="span" sx={{ color: 'warning.main', fontSize: '0.8em', lineHeight: 1 }}>©</Box>
+                        <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                          {team.captain.gamertag}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.8rem' }}>
+                        No Captain
+                      </Typography>
+                    )
                   }
                   sx={{ pb: 1 }}
                 />
