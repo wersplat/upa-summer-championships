@@ -28,6 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const menuItems = [
+    { text: 'Bracket', href: '/bracket' },
     { text: 'Teams', href: '/teams' },
     { text: 'Players', href: '/players' },
   ];
