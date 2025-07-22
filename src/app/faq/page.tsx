@@ -1,4 +1,6 @@
 import { Typography, Container, Box, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
+import DiscordIcon from '@mui/icons-material/Discord';
+import ForumIcon from '@mui/icons-material/Forum';
 
 export default function FAQPage() {
   return (
@@ -234,7 +236,22 @@ export default function FAQPage() {
             <ListItemText primary="• Follow announcements on UnifiedProAm.gg" />
           </ListItem>
           <ListItem>
-            <ListItemText primary="• Join the official Discord (link on site)" />
+            <a 
+              href="https://discord.gg/uXdF8tcz" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#5865F2',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                marginLeft: '-8px'
+              }}
+            >
+              <ForumIcon sx={{ mr: 1 }} />
+              Join our Discord Community
+            </a>
           </ListItem>
           <ListItem>
             <ListItemText primary="• Watch brackets & results update in real time during the weekend" />
