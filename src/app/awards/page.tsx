@@ -67,29 +67,6 @@ export const metadata: Metadata = {
 
 export const revalidate = 30;
 
-interface PlayerStats {
-  id: string;
-  gamertag: string;
-  position: string;
-  team_id: string;
-  team_name: string;
-  team_logo_url: string | null;
-  // Offensive stats
-  points_per_game: number;
-  assists_per_game: number;
-  field_goal_percentage: number;
-  three_point_percentage: number;
-  // Defensive stats
-  steals_per_game: number;
-  blocks_per_game: number;
-  rebounds_per_game: number;
-  // General stats
-  games_played: number;
-  minutes_per_game: number;
-  is_rookie: boolean;
-  overall_rating: number;
-}
-
 async function getAwardsData() {
   try {
     // Log environment variables (in development only)
@@ -121,8 +98,8 @@ async function getAwardsData() {
     
     console.log('Supabase connection successful, fetching players...');
     
-    // Get all players with their team info and stats
-    const { data: players, error, status, statusText } = await supabase
+    // Get all players with their team info
+    const { data: players, error: playersError, status, statusText } = await supabase
       .from('players')
       .select(`
         id,
@@ -135,33 +112,20 @@ async function getAwardsData() {
             name,
             logo_url
           )
-        ),
-        player_stats (
-          points_per_game,
-          assists_per_game,
-          field_goal_percentage,
-          three_point_percentage,
-          steals_per_game,
-          blocks_per_game,
-          rebounds_per_game,
-          games_played,
-          minutes_per_game,
-          is_rookie,
-          overall_rating
         )
       `)
       .order('gamertag');
       
     console.log(`Query status: ${status} - ${statusText}`);
     
-    if (error) {
+    if (playersError) {
       console.error('Detailed Supabase error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
+        message: playersError.message,
+        details: playersError.details,
+        hint: playersError.hint,
+        code: playersError.code
       });
-      throw error;
+      throw playersError;
     }
 
     if (!players || players.length === 0) {
@@ -173,23 +137,20 @@ async function getAwardsData() {
       };
     }
 
-    // Process and transform the data
-    const processedPlayers: PlayerStats[] = (players as unknown as Player[])
-      .map((player) => {
+    // Get stats for all players
+    const playersWithStats = [];
+    for (const player of players as unknown as Player[]) {
+      const { data: stats } = await supabase
+        .from('player_stats')
+        .select('*')
+        .eq('player_id', player.id)
+        .single();
+        
+      if (stats) {
         const teamRoster = player.team_rosters?.[0];
-        const team = teamRoster?.teams?.[0]; // Get first team if exists
-        const stats = player.player_stats?.[0]; // Get first stats entry
+        const team = teamRoster?.teams?.[0];
         
-        if (!stats) {
-          console.warn(`Player ${player.gamertag} has no stats`);
-          return null;
-        }
-
-        if (!team) {
-          console.warn(`Player ${player.gamertag} has no team information`);
-        }
-        
-        return {
+        playersWithStats.push({
           id: player.id,
           gamertag: player.gamertag,
           position: player.position || 'Unknown',
@@ -207,11 +168,12 @@ async function getAwardsData() {
           minutes_per_game: stats.minutes_per_game || 0,
           is_rookie: stats.is_rookie || false,
           overall_rating: stats.overall_rating || 0
-        };
-      })
-      .filter((player): player is PlayerStats => 
-        player !== null && player.games_played > 0
-      ); // Only include valid players who have played
+        });
+      }
+    }
+    
+    // Filter out players with no games played
+    const processedPlayers = playersWithStats.filter(player => player.games_played > 0);
 
   // Calculate OMVP candidates (top 5 by offensive rating)
   const omvpCandidates = processedPlayers

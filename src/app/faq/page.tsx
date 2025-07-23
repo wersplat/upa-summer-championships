@@ -1,5 +1,5 @@
 import { Typography, Container, Box, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
-import DiscordIcon from '@mui/icons-material/Discord';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import ForumIcon from '@mui/icons-material/Forum';
 
 export default function FAQPage() {

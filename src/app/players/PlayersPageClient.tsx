@@ -310,8 +310,8 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
               onChange={(e) => setPositionFilter(e.target.value as string)}
             >
               <MenuItem value="all">All Positions</MenuItem>
-              {positions.map((pos) => (
-                <MenuItem key={pos} value={pos}>{pos}</MenuItem>
+              {positions.map((pos, index) => (
+                <MenuItem key={`position-${index}-${pos}`} value={pos}>{pos}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -482,7 +482,7 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
               {sortedPlayers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((player, index) => (
-                  <TableRow hover key={player.id}>
+                  <TableRow hover key={`player-${player.id || index}-${index}`}>
                     <TableCell>#{index + 1 + page * rowsPerPage}</TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

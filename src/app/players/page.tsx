@@ -27,7 +27,7 @@ type TeamInfo = {
 };
 
 // Define the player with team and stats interface
-type PlayerWithTeam = Omit<Player, 'teams' | 'stats'> & {
+export type PlayerWithTeam = Omit<Player, 'teams' | 'stats'> & {
   avatar_url?: string | null;
   teams?: TeamInfo[];
   stats?: PlayerStats;

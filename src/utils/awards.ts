@@ -53,8 +53,8 @@ export async function getAwardsData() {
       return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
     }
 
-    // Get all players with their team info and stats, filtered by event ID
-    const { data: players, error } = await supabase
+    // Get all players with their team info, filtered by event ID
+    const { data: players, error: playersError } = await supabase
       .from('players')
       .select(`
         id,
@@ -68,66 +68,45 @@ export async function getAwardsData() {
             name,
             logo_url
           )
-        ),
-        player_stats (
-          points_per_game,
-          assists_per_game,
-          field_goal_percentage,
-          three_point_percentage,
-          steals_per_game,
-          blocks_per_game,
-          rebounds_per_game,
-          games_played,
-          minutes_per_game,
-          is_rookie,
-          overall_rating
         )
       `)
       .in('id', playerIds)
       .eq('team_rosters.event_id', eventId)
       .order('gamertag');
 
-    if (error) throw error;
+    if (playersError) throw playersError;
     if (!players || players.length === 0) return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
 
-    // Define a type for the raw player data from the database
+    // Define a simplified type for the raw player data from the database
     interface RawPlayer {
       id: string;
       gamertag: string;
       position: string | null;
       team_rosters: Array<{
         team_id: string;
+        event_id: string;
         teams: Array<{
           id: string;
           name: string;
           logo_url: string | null;
         }>;
       }>;
-      player_stats: Array<{
-        points_per_game: number;
-        assists_per_game: number;
-        field_goal_percentage: number;
-        three_point_percentage: number;
-        steals_per_game: number;
-        blocks_per_game: number;
-        rebounds_per_game: number;
-        games_played: number;
-        minutes_per_game: number;
-        is_rookie: boolean;
-        overall_rating: number;
-      }>;
     }
 
-    // Process and transform the data
-    const processedPlayers = (players as RawPlayer[])
-      .map((player) => {
+    // Get stats for all players
+    const playersWithStats = [];
+    for (const player of players as unknown as RawPlayer[]) {
+      const { data: stats } = await supabase
+        .from('player_stats')
+        .select('*')
+        .eq('player_id', player.id)
+        .single();
+        
+      if (stats) {
         const teamRoster = player.team_rosters?.[0];
-        const team = teamRoster?.teams?.[0]; // Access first team in the array
-        const stats = player.player_stats?.[0];
+        const team = teamRoster?.teams?.[0];
         
-        if (!stats || stats.games_played === 0) return null;
-        
-        return {
+        playersWithStats.push({
           id: player.id,
           gamertag: player.gamertag,
           position: player.position || 'Unknown',
@@ -145,9 +124,12 @@ export async function getAwardsData() {
           minutes_per_game: stats.minutes_per_game || 0,
           is_rookie: stats.is_rookie || false,
           overall_rating: stats.overall_rating || 0
-        };
-      })
-      .filter((player): player is PlayerAwardStats => player !== null);
+        });
+      }
+    }
+    
+    // Filter out players with no games played
+    const processedPlayers = playersWithStats.filter(player => player.games_played > 0);
 
     // Calculate OMVP candidates (top 5 by offensive rating)
     const omvpCandidates = processedPlayers

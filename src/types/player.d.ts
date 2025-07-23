@@ -27,17 +27,8 @@ export interface PlayerWithTeam extends Player {
   stats?: PlayerStats;
 }
 
-declare module '@/components/PlayerProfile' {
-  import { FC } from 'react';
-  import { PlayerWithTeam } from '@/types/player';
-
-  interface PlayerProfileProps {
-    player: PlayerWithTeam;
-  }
-
-  const PlayerProfile: FC<PlayerProfileProps>;
-  export default PlayerProfile;
-}
+// PlayerProfile declaration removed to avoid duplicate identifier conflict.
+// The actual PlayerProfile component handles its own exports.
 
 declare module './PlayersPageClient' {
   import { FC } from 'react';
