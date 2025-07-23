@@ -101,7 +101,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       return null;
     }
 
-    // Fetch team roster with player details
+    // Fetch team roster with player details for the specific event
     const { data: rosterData, error: rosterDataError } = await supabase
       .from('team_rosters')
       .select(`
@@ -115,7 +115,9 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
         event_id,
         players (*)
       `)
-      .eq('team_id', teamData.id);
+      .eq('team_id', teamData.id)
+      .eq('event_id', eventId)
+      .is('left_at', null); // Only include active roster entries
 
     if (rosterDataError) {
       console.error('Error fetching team roster:', rosterDataError);
