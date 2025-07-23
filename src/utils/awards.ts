@@ -31,7 +31,29 @@ export async function getAwardsData() {
       { auth: { persistSession: false } }
     );
 
-    // Get all players with their team info and stats
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+    
+    // First, get player IDs that have roster entries for the specific event
+    const { data: teamRosters, error: rosterError } = await supabase
+      .from('team_rosters')
+      .select('player_id')
+      .eq('event_id', eventId)
+      .is('left_at', null);
+
+    if (rosterError) {
+      console.error('Error fetching team rosters:', rosterError);
+      throw rosterError;
+    }
+
+    // Extract unique player IDs from rosters
+    const playerIds = Array.from(new Set(teamRosters?.map(roster => roster.player_id).filter(Boolean)));
+    
+    if (playerIds.length === 0) {
+      console.log('No players found for the event');
+      return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
+    }
+
+    // Get all players with their team info and stats, filtered by event ID
     const { data: players, error } = await supabase
       .from('players')
       .select(`
@@ -40,6 +62,7 @@ export async function getAwardsData() {
         position,
         team_rosters!inner (
           team_id,
+          event_id,
           teams!inner (
             id,
             name,
@@ -60,6 +83,8 @@ export async function getAwardsData() {
           overall_rating
         )
       `)
+      .in('id', playerIds)
+      .eq('team_rosters.event_id', eventId)
       .order('gamertag');
 
     if (error) throw error;

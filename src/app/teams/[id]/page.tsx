@@ -123,7 +123,7 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
     }
 
     // Get all matches for the team in the specific event
-    let { data: matchesData, error: matchesError } = await supabase
+    const { data: matchesData, error: matchesError } = await supabase
       .from('matches')
       .select(`
         id,
@@ -141,31 +141,6 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       .not('score_a', 'is', null)  // Only include completed matches
       .not('score_b', 'is', null)  // Only include completed matches
       .order('played_at', { ascending: false });
-
-    // If no matches found for the specific event, get all completed matches for the team
-    if (!matchesData || matchesData.length === 0) {
-      console.log(`No matches found for team ${teamData.id} in event ${eventId}, showing all completed matches`);
-      const { data: allMatchesData, error: allMatchesError } = await supabase
-        .from('matches')
-        .select(`
-          id,
-          event_id,
-          team_a_id,
-          team_b_id,
-          score_a,
-          score_b,
-          played_at,
-          team_a:team_a_id (id, name, logo_url),
-          team_b:team_b_id (id, name, logo_url)
-        `)
-        .or(`team_a_id.eq.${teamData.id},team_b_id.eq.${teamData.id}`)
-        .not('score_a', 'is', null)  // Only include completed matches
-        .not('score_b', 'is', null)  // Only include completed matches
-        .order('played_at', { ascending: false });
-      
-      matchesData = allMatchesData;
-      matchesError = allMatchesError;
-    }
 
     if (matchesError) throw matchesError;
 

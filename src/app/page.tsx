@@ -5,8 +5,7 @@ import { Whatshot, Shield, Star } from '@mui/icons-material';
 import { getAwardsData } from '@/utils/awards';
 import StandardCard from '@/components/StandardCard';
 import PlayerCard from '@/components/PlayerCard';
-import { SPACING } from '@/theme/constants';
-import { AWARD_COLORS } from '@/theme/colors';
+
 
 export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
@@ -77,18 +76,21 @@ interface PlayerWithRoster {
     joined_at: string;
     left_at: string | null;
     event_id: string | null;
-    teams?: {
+    teams?: Array<{
       id: string;
       name: string;
       logo_url: string | null;
-    };
+    }>;
   }>;
 }
 
 async function getRecentMatches(): Promise<MatchWithTeams[]> {
+  const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+  
   const { data: matches, error } = await supabase
     .from('matches')
     .select('*')
+    .eq('event_id', eventId)
     .not('score_a', 'is', null)
     .not('score_b', 'is', null)
     .order('played_at', { ascending: false })
@@ -128,9 +130,12 @@ async function getRecentMatches(): Promise<MatchWithTeams[]> {
 }
 
 async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
+  const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+  
   const { data: matches, error } = await supabase
     .from('matches')
     .select('*')
+    .eq('event_id', eventId)
     .is('score_a', null)
     .is('score_b', null)
     .order('played_at', { ascending: true })
@@ -304,6 +309,29 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
 
 async function getTopPlayers(): Promise<PlayerWithRoster[]> {
   try {
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+    
+    // First, get player IDs that have roster entries for the specific event
+    const { data: teamRosters, error: rosterError } = await supabase
+      .from('team_rosters')
+      .select('player_id')
+      .eq('event_id', eventId)
+      .is('left_at', null);
+
+    if (rosterError) {
+      console.error('Error fetching team rosters:', rosterError);
+      throw rosterError;
+    }
+
+    // Extract unique player IDs from rosters
+    const playerIds = Array.from(new Set(teamRosters?.map(roster => roster.player_id).filter(Boolean)));
+    
+    if (playerIds.length === 0) {
+      console.log('No players found for the event');
+      return [];
+    }
+
+    // Get top players that are in our event
     const { data: players, error } = await supabase
       .from('players')
       .select(`
@@ -317,7 +345,7 @@ async function getTopPlayers(): Promise<PlayerWithRoster[]> {
         player_rank_score,
         monthly_value,
         created_at,
-        team_rosters (
+        team_rosters!inner (
           id,
           team_id,
           player_id,
@@ -325,10 +353,17 @@ async function getTopPlayers(): Promise<PlayerWithRoster[]> {
           is_player_coach,
           joined_at,
           left_at,
-          event_id
+          event_id,
+          teams (
+            id,
+            name,
+            logo_url
+          )
         )
       `)
+      .in('id', playerIds)
       .is('team_rosters.left_at', null)
+      .eq('team_rosters.event_id', eventId)
       .order('player_rp', { ascending: false })
       .limit(8);
 

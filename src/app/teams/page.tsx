@@ -122,10 +122,11 @@ async function getTeams(): Promise<TeamWithRegion[]> {
       const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
       const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
       
-      // Get all matches for this team to calculate W-L and points differential
+      // Get all matches for this team in the specific event to calculate W-L and points differential
       const { data: matchesData } = await supabase
         .from('matches')
         .select('*')
+        .eq('event_id', eventId)
         .or(`team_a_id.eq.${team.id},team_b_id.eq.${team.id}`)
         .not('score_a', 'is', null)
         .not('score_b', 'is', null);
