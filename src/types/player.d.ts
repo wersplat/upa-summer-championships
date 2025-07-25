@@ -10,7 +10,6 @@ export interface PlayerStats {
   field_goal_percentage: number;
   three_point_percentage: number;
   free_throw_percentage: number;
-  minutes_per_game: number;
   turnovers_per_game: number;
   fouls_per_game: number;
   plus_minus: number;

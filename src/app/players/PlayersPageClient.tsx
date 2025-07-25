@@ -37,7 +37,6 @@ interface PlayerStats {
   field_goal_percentage: number;
   three_point_percentage: number;
   free_throw_percentage: number;
-  minutes_per_game: number;
   turnovers_per_game: number;
   fouls_per_game: number;
   plus_minus: number;
@@ -185,9 +184,6 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
           break;
         case 'fpg':
           comparison = (a.stats?.fouls_per_game || 0) - (b.stats?.fouls_per_game || 0);
-          break;
-        case 'mpg':
-          comparison = (a.stats?.minutes_per_game || 0) - (b.stats?.minutes_per_game || 0);
           break;
         case 'plus_minus':
           comparison = (a.stats?.plus_minus || 0) - (b.stats?.plus_minus || 0);

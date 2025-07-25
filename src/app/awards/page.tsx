@@ -24,7 +24,6 @@ export interface PlayerStatsData {
   blocks_per_game: number;
   rebounds_per_game: number;
   games_played: number;
-  minutes_per_game: number;
   is_rookie: boolean;
   overall_rating: number;
 }
@@ -52,7 +51,6 @@ export interface PlayerStats {
   blocks_per_game: number;
   rebounds_per_game: number;
   games_played: number;
-  minutes_per_game: number;
   is_rookie: boolean;
   overall_rating: number;
   offensive_rating?: number;
@@ -165,7 +163,6 @@ async function getAwardsData() {
           blocks_per_game: stats.blocks_per_game || 0,
           rebounds_per_game: stats.rebounds_per_game || 0,
           games_played: stats.games_played || 0,
-          minutes_per_game: stats.minutes_per_game || 0,
           is_rookie: stats.is_rookie || false,
           overall_rating: stats.overall_rating || 0
         });

@@ -1,5 +1,5 @@
 -- Create custom types
-CREATE TYPE public.position_type AS ENUM ('Guard', 'Forward', 'Center', 'Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward');
+CREATE TYPE public.position_type AS ENUM ('Guard', 'Forward', 'Center', 'Point Guard', 'Shooting Guard', 'Lock', 'Power Forward');
 CREATE TYPE public.event_tier AS ENUM ('T1', 'T2', 'T3', 'T4');
 
 -- Create Regions table

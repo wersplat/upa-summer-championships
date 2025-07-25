@@ -13,7 +13,6 @@ interface PlayerStats {
   field_goal_percentage: number;
   three_point_percentage: number;
   free_throw_percentage: number;
-  minutes_per_game: number;
   turnovers_per_game: number;
   fouls_per_game: number;
   plus_minus: number;
@@ -192,7 +191,6 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
           field_goal_percentage: stats.field_goal_percentage || 0,
           three_point_percentage: stats.three_point_percentage || 0,
           free_throw_percentage: stats.free_throw_percentage || 0,
-          minutes_per_game: stats.minutes_per_game || 0,
           turnovers_per_game: stats.turnovers_per_game || 0,
           fouls_per_game: stats.fouls_per_game || 0,
           plus_minus: stats.plus_minus || 0,
@@ -206,7 +204,6 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
           field_goal_percentage: 0,
           three_point_percentage: 0,
           free_throw_percentage: 0,
-          minutes_per_game: 0,
           turnovers_per_game: 0,
           fouls_per_game: 0,
           plus_minus: 0,

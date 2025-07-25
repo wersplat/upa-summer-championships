@@ -6,7 +6,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Enums
-export type PositionType = 'Guard' | 'Forward' | 'Center' | 'Point Guard' | 'Shooting Guard' | 'Small Forward' | 'Power Forward';
+export type PositionType = 'Center' | 'Point Guard' | 'Shooting Guard' | 'Lock' | 'Power Forward';
 export type EventTier = 'T1' | 'T2' | 'T3' | 'T4';
 export type RosterStatus = 'active' | 'inactive' | 'suspended';
 

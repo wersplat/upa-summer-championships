@@ -29,7 +29,7 @@ export const AWARD_COLORS = {
 export const POSITION_COLORS = {
   'Point Guard': 'primary.main',
   'Shooting Guard': 'secondary.main',
-  'Small Forward': 'error.main',
+  'Lock': 'error.main',
   'Power Forward': 'warning.main',
   'Center': 'info.main',
   'default': 'grey.500',

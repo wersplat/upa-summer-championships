@@ -57,12 +57,9 @@ export default function RosterTable({ players }: RosterTableProps) {
   const positionOrder: Record<string, number> = {
     'Point Guard': 1,
     'Shooting Guard': 2,
-    'Guard': 2.5, // Fallback for just 'Guard'
     'Lock': 3,
-    'Small Forward': 3.5, // Fallback for 'Small Forward' which is similar to Lock
     'Power Forward': 4,
     'Center': 5,
-    'Big': 4.5, // Fallback for 'Big' which is usually PF or C
   };
 
   const sortedAndFilteredPlayers = useMemo(() => {

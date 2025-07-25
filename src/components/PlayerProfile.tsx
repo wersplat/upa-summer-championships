@@ -288,7 +288,6 @@ function PlayerProfile({ player }: PlayerProfileProps) {
                       <Table size="small">
                         <TableBody>
                           {renderStatRow('Games Played', player.stats.games_played)}
-                          {renderStatRow('Minutes Per Game', player.stats.minutes_per_game)}
                           {renderStatRow('Points Per Game', player.stats.points_per_game)}
                           {renderStatRow('Assists Per Game', player.stats.assists_per_game)}
                           {renderStatRow('Rebounds Per Game', player.stats.rebounds_per_game)}
