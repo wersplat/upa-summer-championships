@@ -26,8 +26,23 @@ import {
   Button
 } from '@mui/material';
 import { Search, SportsBasketball } from '@mui/icons-material';
-// Define basic player stats type since we can't import it
-interface PlayerStats {
+import type { Player, Team } from '@/utils/supabase';
+
+// Define the team interface
+type TeamInfo = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+};
+
+// Define the player with team and stats interface
+type PlayerWithTeam = Player & {
+  teams?: TeamInfo[];
+  stats?: PlayerStats;
+};
+
+// Define player stats type that matches our database schema
+type PlayerStats = {
   games_played: number;
   points_per_game: number;
   assists_per_game: number;
@@ -40,64 +55,30 @@ interface PlayerStats {
   turnovers_per_game: number;
   fouls_per_game: number;
   plus_minus: number;
-  [key: string]: number; // Allow dynamic access
-}
-
-// Define all possible value types in Player
-type PlayerValue = 
-  | string 
-  | number 
-  | boolean 
-  | TeamInfo[] 
-  | PlayerStats 
-  | undefined 
-  | null;
-
-interface Player {
-  // Required properties
-  id: string;
-  gamertag: string;
-  performance_score: number;
-  player_rp: number;
-  player_rank_score: number;
-  monthly_value: number;
-  created_at: string;
-  
-  // Optional properties with specific types
-  teams?: TeamInfo[];
-  stats?: PlayerStats;
-  position?: string;
-  height?: string;
-  weight?: string;
-  age?: number;
-  
-  // Index signature for dynamic access with all possible value types
-  [key: string]: PlayerValue;
-}
-
-// Define the team interface
-type TeamInfo = {
-  id: string;
-  name: string;
-  logo_url: string | null;
 };
 
-// Define the player with team and stats interface
-type PlayerWithTeam = Player & {
-  avatar_url?: string | null;
-  teams?: TeamInfo[];
-  stats?: PlayerStats;
-};
-
-// Fix for the getPositionColor function type issue
-type PositionColorType = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default';
+type SortField = 
+  | 'rank' 
+  | 'name' 
+  | 'team' 
+  | 'position' 
+  | 'ppg' 
+  | 'rpg' 
+  | 'apg' 
+  | 'spg' 
+  | 'bpg' 
+  | 'fg_pct' 
+  | 'ft_pct' 
+  | '3p_pct' 
+  | 'tpg' 
+  | 'fpg' 
+  | 'plus_minus' 
+  | 'performance_score';
 
 type PlayersPageClientProps = {
   players: PlayerWithTeam[];
   showFallbackMessage?: boolean;
 };
-
-type SortField = keyof PlayerWithTeam | 'team' | 'ppg' | 'rpg' | 'apg' | 'spg' | 'bpg' | 'fg_pct' | 'ft_pct' | '3p_pct' | 'tpg' | 'fpg' | 'mpg' | 'plus_minus' | 'performance_score';
 
 // This is a client component that renders the players page
 // It receives the players data from the server component
@@ -219,10 +200,10 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
     return isPercentage ? `${(value * 100).toFixed(1)}%` : value.toFixed(1);
   };
 
-  const getPositionColor = (position?: string | null): PositionColorType => {
+  const getPositionColor = (position?: string | null): 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default' => {
     if (!position) return 'default';
     
-    const positionMap: Record<string, PositionColorType> = {
+    const positionMap: Record<string, 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'default'> = {
       'Point Guard': 'primary',
       'Shooting Guard': 'secondary',
       'Lock': 'success',
