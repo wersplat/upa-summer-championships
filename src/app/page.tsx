@@ -130,15 +130,13 @@ async function getRecentMatches(): Promise<MatchWithTeams[]> {
 }
 
 async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
-  const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+  const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2025 
   
   const { data: matches, error } = await supabase
-    .from('matches')
+    .from('upcoming_matches_view')
     .select('*')
     .eq('event_id', eventId)
-    .is('score_a', null)
-    .is('score_b', null)
-    .order('played_at', { ascending: true })
+    .order('scheduled_at', { ascending: true })
     .limit(5);
 
   if (error) {
@@ -148,29 +146,25 @@ async function getUpcomingMatches(): Promise<MatchWithTeams[]> {
 
   if (!matches || matches.length === 0) return [];
 
-  // Get unique team IDs
-  const teamIds = new Set<string>();
-  matches.forEach(match => {
-    if (match.team_a_id) teamIds.add(match.team_a_id);
-    if (match.team_b_id) teamIds.add(match.team_b_id);
-  });
-
-  // Fetch all teams data in a single query
-  const { data: teamsData } = await supabase
-    .from('teams')
-    .select('id, name, logo_url')
-    .in('id', Array.from(teamIds));
-
-  // Create a map of team IDs to team data
-  const teamsMap = new Map(
-    teamsData?.map(team => [team.id, { id: team.id, name: team.name, logo_url: team.logo_url }]) || []
-  );
-
-  // Map matches with team data
+  // Map the view data to MatchWithTeams interface
   return matches.map(match => ({
-    ...match,
-    team_a: match.team_a_id ? teamsMap.get(match.team_a_id) || null : null,
-    team_b: match.team_b_id ? teamsMap.get(match.team_b_id) || null : null
+    id: match.id,
+    team_a_id: match.team_a_id,
+    team_b_id: match.team_b_id,
+    team_a: {
+      id: match.team_a_id,
+      name: match.team_a_name,
+      logo_url: match.team_a_logo
+    },
+    team_b: {
+      id: match.team_b_id,
+      name: match.team_b_name,
+      logo_url: match.team_b_logo
+    },
+    score_a: null,  // These are upcoming matches, so scores should be null
+    score_b: null,
+    played_at: match.scheduled_at,
+    round: match.round?.toString()
   }));
 }
 
