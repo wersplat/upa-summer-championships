@@ -1,5 +1,5 @@
 /**
- * Accessibility utilities for UPA Summer Championships
+ * Accessibility utilities for UPA Summer Championship
  * Use these utilities to ensure consistent accessibility practices across the application
  */
 

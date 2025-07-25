@@ -360,7 +360,7 @@ export default async function Home() {
         <Box 
           component="img"
           src="/UPA-Summer-Championships.png"
-          alt="UPA Summer Championships"
+          alt="UPA Summer Championship"
           sx={{
             height: { xs: 120, sm: 160, md: 200 },
             width: 'auto',
@@ -380,7 +380,7 @@ export default async function Home() {
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
           }}
         >
-          UPA Summer Championships
+          UPA Summer Championship
         </Typography>
         <Typography 
           variant="h5" 
@@ -980,7 +980,7 @@ export default async function Home() {
           Our Sponsors
         </Typography>
         <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
-          Thanks to our amazing partners for supporting the UPA Summer Championships.
+          Thanks to our amazing partners for supporting the UPA Summer Championship.
         </Typography>
         <Box sx={{ 
           display: 'flex', 

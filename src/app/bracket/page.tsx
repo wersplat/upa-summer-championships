@@ -16,7 +16,7 @@ export default function BracketPage() {
         <Box
           component="img"
           src="/UPA-Summer-Championships.png"
-          alt="UPA Summer Championships"
+          alt="UPA Summer Championship"
           sx={{
             height: 80,
             width: 'auto',
@@ -29,7 +29,7 @@ export default function BracketPage() {
           Tournament Bracket & Group Stage
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Follow the progress of the UPA Summer Championships tournament
+          Follow the progress of the UPA Summer Championship tournament
         </Typography>
       </Box>
 
@@ -99,7 +99,7 @@ export default function BracketPage() {
               <Box
                 component="iframe"
                 src={`https://rt25k.challonge.com/SummerClash/module?theme=2&scale_to_fit=1&show_final_results=1&show_standings=1&show_live_status=1&multiplier=0.9&match_width_multiplier=1.1&show_tournament_name=1&tab=final`}
-                title="Tournament Bracket | UPA Summer Championships"
+                title="Tournament Bracket | UPA Summer Championship"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 allowFullScreen

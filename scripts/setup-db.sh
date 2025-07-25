@@ -19,7 +19,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}Setting up UPA Summer Championships database...${NC}"
+echo -e "${YELLOW}Setting up UPA Summer Championship database...${NC}"
 
 # Function to run SQL files
 run_sql_file() {

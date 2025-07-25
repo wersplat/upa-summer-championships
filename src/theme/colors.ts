@@ -1,5 +1,5 @@
 /**
- * Color utilities for UPA Summer Championships
+ * Color utilities for UPA Summer Championship
  * Use these utilities to ensure consistent color usage across the application
  */
 

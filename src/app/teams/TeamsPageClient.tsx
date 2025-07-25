@@ -152,7 +152,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
           >
             <Image
               src="/UPA-Summer-Championships.png"
-              alt="UPA Summer Championships"
+              alt="UPA Summer Championship"
               width={300}
               height={120}
               style={{
@@ -175,7 +175,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
             Summer Championship Teams
           </Typography>
           <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
-            {initialTeams.length} teams competing in the UPA Summer Championships
+            {initialTeams.length} teams competing in the UPA Summer Championship
           </Typography>
           
           {/* Quick Stats */}

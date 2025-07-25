@@ -1,7 +1,7 @@
 {
-  "name": "UPA Summer Championships",
+  "name": "UPA Summer Championship",
   "short_name": "UPA Summer",
-  "description": "Track your favorite teams and players in the UPA Summer Championships",
+  "description": "Track your favorite teams and players in the UPA Summer Championship",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

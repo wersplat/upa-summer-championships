@@ -1,5 +1,5 @@
 /**
- * Theme constants for UPA Summer Championships
+ * Theme constants for UPA Summer Championship
  * Use these constants for consistent spacing, colors, and styling across the application
  */
 

@@ -82,7 +82,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Box
               component="img"
               src="/UPA-Summer-Championships.png"
-              alt="UPA Summer Championships"
+              alt="UPA Summer Championship"
               sx={{
                 height: 40,
                 width: 'auto',
@@ -95,7 +95,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               }}
             />
             <Typography variant="h6" sx={{ fontWeight: 700, display: { xs: 'none', md: 'block' }, '&:hover': { opacity: 0.9 } }}>
-              UPA Summer Championships
+              UPA Summer Championship
             </Typography>
           </Box>
           
@@ -145,7 +145,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Box
               component="img"
               src="/UPA-Summer-Championships.png"
-              alt="UPA Summer Championships"
+              alt="UPA Summer Championship"
               sx={{
                 height: 40,
                 width: 'auto',
@@ -159,7 +159,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               }}
             />
             <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center' }}>
-              UPA Summer Championships
+              UPA Summer Championship
             </Typography>
           </Link>
           <Divider />
@@ -292,7 +292,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Box component="footer" sx={{ mt: 4, py: 3, backgroundColor: '#001F3F', color: 'white' }}>
         <Container>
           <Typography variant="body2" align="center" sx={{ opacity: 0.8 }}>
-            &copy; {new Date().getFullYear()} UPA Summer Championships. All rights reserved.
+            &copy; {new Date().getFullYear()} UPA Summer Championship. All rights reserved.
           </Typography>
         </Container>
       </Box>

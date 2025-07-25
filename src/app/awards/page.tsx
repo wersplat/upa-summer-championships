@@ -59,8 +59,8 @@ export interface PlayerStats {
 }
 
 export const metadata: Metadata = {
-  title: 'Awards Race - UPA Summer Championships',
-  description: 'Track the race for Offensive MVP, Defensive MVP, and Rookie of Tournament awards in the UPA Summer Championships.',
+  title: 'Awards Race - UPA Summer Championship',
+  description: 'Track the race for Offensive MVP, Defensive MVP, and Rookie of Tournament awards in the UPA Summer Championship.',
 };
 
 export const revalidate = 30;
