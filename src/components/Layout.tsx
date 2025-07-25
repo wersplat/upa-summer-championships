@@ -36,8 +36,36 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="static" sx={{ background: 'linear-gradient(to right,#001F3F,#1E40AF)' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      backgroundImage: 'url(/event%20wallpaper.png)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      '&::before': {
+        content: '""',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: mode === 'light' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+        zIndex: 0,
+      },
+      color: 'text.primary'
+    }}>
+      <AppBar position="static" sx={{ 
+        background: 'linear-gradient(135deg, #0b2a4a 0%, #1a365d 100%)',
+        position: 'relative', 
+        zIndex: 1,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        '& .MuiTypography-root': {
+          color: '#ffffff',
+          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+        }
+      }}>
         <Toolbar>
           {/* Mobile menu button */}
           <IconButton
@@ -168,7 +196,99 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </Box>
         </Box>
       </Drawer>
-      <Container component="main" sx={{ flexGrow: 1, py: 2 }}>{children}</Container>
+      <Box component="main" sx={({ palette }) => ({
+        flexGrow: 1, 
+        position: 'relative',
+        zIndex: 1,
+        backgroundColor: 'background.paper',
+        color: 'text.primary',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+        borderRadius: { xs: 0, sm: 2 },
+        m: { xs: 0, sm: 2 },
+        p: { xs: 2, sm: 3 },
+        '@media (min-width: 900px)': {
+          maxWidth: 1400,
+          mx: 'auto',
+          my: 3,
+          p: 4,
+          width: 'calc(100% - 48px)',
+        },
+        '& h1, & h2, & h3, & h4, & h5, & h6': {
+          color: 'text.primary',
+          fontWeight: 700,
+          mb: 2,
+          '&:not(:first-of-type)': {
+            mt: 4
+          }
+        },
+        '& p': {
+          color: 'text.secondary',
+          lineHeight: 1.7,
+          mb: 2,
+          fontSize: '1.05rem'
+        },
+        '& a': {
+          color: 'primary.main',
+          fontWeight: 500,
+          textDecoration: 'none',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            color: 'primary.dark',
+            textDecoration: 'underline',
+          }
+        },
+        '& .MuiButton-contained': {
+          background: 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)',
+          color: 'white',
+          fontWeight: 600,
+          textTransform: 'none',
+          borderRadius: 2,
+          px: 3,
+          py: 1,
+          '&:hover': {
+            background: 'linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%)',
+            boxShadow: '0 4px 12px rgba(30, 64, 175, 0.25)'
+          }
+        },
+        '& .MuiCard-root': {
+          backgroundColor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+            transform: 'translateY(-2px)'
+          }
+        },
+        '& .MuiPaper-root': {
+          backgroundColor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.05)'
+        },
+        '& .MuiTableContainer-root': {
+          backgroundColor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+          '& .MuiTableHead-root': {
+            backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.03)'
+          },
+          '& .MuiTableCell-head': {
+            fontWeight: 700,
+            color: 'text.primary',
+            backgroundColor: 'transparent'
+          },
+          '& .MuiTableBody-root .MuiTableRow-root': {
+            '&:nth-of-type(odd)': {
+              backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.03)'
+            },
+            '&:hover': {
+              backgroundColor: mode === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)'
+            }
+          }
+        }
+      })}>
+        {children}
+      </Box>
       <Box component="footer" sx={{ mt: 4, py: 3, backgroundColor: '#001F3F', color: 'white' }}>
         <Container>
           <Typography variant="body2" align="center" sx={{ opacity: 0.8 }}>
