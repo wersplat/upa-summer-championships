@@ -26,13 +26,14 @@ interface TeamWithRegion {
   wins: number;
   losses: number;
   points_differential: number;
+  group_points: number;
 }
 
 async function getTeams(): Promise<TeamWithRegion[]> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
     
-    // Get teams that have roster entries for the specific event, including captain info
+    // First get all teams with their basic info and captain
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
@@ -111,44 +112,58 @@ async function getTeams(): Promise<TeamWithRegion[]> {
           } : null,
           wins: 0,
           losses: 0,
-          points_differential: 0
+          points_differential: 0,
+          group_points: 0
         };
       });
     }
 
-    // Process teams to include captain information and calculate stats
-    const teamsWithStats = await Promise.all((teams || []).map(async (team) => {
+    // Get match data and group points for all teams
+    const teamIds = teams.map(team => team.id);
+    const [
+      { data: matches },
+      { data: groupPoints },
+    ] = await Promise.all([
+      supabase
+        .from('matches')
+        .select('*')
+        .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`),
+      supabase
+        .from('group_points_standings')
+        .select('team_id, total_points')
+        .in('team_id', teamIds)
+    ]);
+
+    // Create a map of team_id to group points for quick lookup
+    const groupPointsMap = new Map(
+      (groupPoints || []).map(gp => [gp.team_id, gp.total_points || 0])
+    );
+
+    // Calculate stats for each team
+    const teamsWithStats = teams.map(team => {
+      const teamMatches = (matches || []).filter(match => 
+        match.team_a_id === team.id || match.team_b_id === team.id
+      );
+      
+      const teamWins = teamMatches.filter(match => {
+        if (match.team_a_id === team.id) return (match.score_a || 0) > (match.score_b || 0);
+        return (match.score_b || 0) > (match.score_a || 0);
+      }).length;
+      
+      const teamPointsFor = teamMatches.reduce((total, match) => {
+        return total + (match.team_a_id === team.id ? (match.score_a || 0) : (match.score_b || 0));
+      }, 0);
+      
+      const teamPointsAgainst = teamMatches.reduce((total, match) => {
+        return total + (match.team_a_id === team.id ? (match.score_b || 0) : (match.score_a || 0));
+      }, 0);
+      
+      const teamLosses = teamMatches.length - teamWins;
+      const pointsDiff = teamPointsFor - teamPointsAgainst;
+      
       // Find the captain from team_rosters
       const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
       const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
-      
-      // Get all matches for this team in the specific event to calculate W-L and points differential
-      const { data: matchesData } = await supabase
-        .from('matches')
-        .select('*')
-        .eq('event_id', eventId)
-        .or(`team_a_id.eq.${team.id},team_b_id.eq.${team.id}`)
-        .not('score_a', 'is', null)
-        .not('score_b', 'is', null);
-      
-      // Calculate W-L and points differential
-      let wins = 0;
-      let pointsFor = 0;
-      let pointsAgainst = 0;
-      
-      matchesData?.forEach(match => {
-        const isTeamA = match.team_a_id === team.id;
-        const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
-        const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
-        
-        pointsFor += teamScore;
-        pointsAgainst += opponentScore;
-        
-        if (teamScore > opponentScore) wins++;
-      });
-      
-      const losses = (matchesData?.length || 0) - wins;
-      const points_differential = pointsFor - pointsAgainst;
       
       return {
         ...team,
@@ -156,21 +171,23 @@ async function getTeams(): Promise<TeamWithRegion[]> {
           id: captainPlayer.id,
           gamertag: captainPlayer.gamertag
         } : null,
-        wins,
-        losses,
-        points_differential
+        wins: teamWins,
+        losses: teamLosses,
+        points_differential: pointsDiff,
+        group_points: groupPointsMap.get(team.id) || 0
       };
-    }));
+    });
 
-    // Sort by wins (descending) by default
-    return teamsWithStats.sort((a, b) => b.wins - a.wins);
+    // Sort by group points, then point differential
+    return teamsWithStats.sort((a, b) => {
+      if (a.group_points !== b.group_points) return b.group_points - a.group_points;
+      return b.points_differential - a.points_differential;
+    });
   } catch (error) {
-    console.error('Error in getTeams:', error);
+    console.error('Error fetching teams:', error);
     return [];
   }
 }
-
-
 
 export default async function TeamsPage() {
   const teams = await getTeams();

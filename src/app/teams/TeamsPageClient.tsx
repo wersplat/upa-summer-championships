@@ -48,6 +48,7 @@ interface TeamWithRegion {
   wins?: number;
   losses?: number;
   points_differential?: number;
+  group_points?: number;
 }
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
@@ -58,7 +59,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
     router.prefetch(`/teams/${teamId}`);
   }, [router]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'wins' | 'rp' | 'rank' | 'name'>('wins');
+  const [sortBy, setSortBy] = useState<'group_points' | 'wins' | 'rp' | 'rank' | 'name'>('group_points');
   const [filterRegion, setFilterRegion] = useState<string>('all');
 
   // Get unique regions for filter
@@ -82,6 +83,12 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
 
     return filtered.sort((a, b) => {
       switch (sortBy) {
+        case 'group_points':
+          // Sort by group points (descending), then by point differential (descending)
+          if ((b.group_points || 0) !== (a.group_points || 0)) {
+            return (b.group_points || 0) - (a.group_points || 0);
+          }
+          return (b.points_differential || 0) - (a.points_differential || 0);
         case 'wins':
           // Default to 0 if wins is not available
           const aWins = a.wins || 0;
@@ -253,8 +260,9 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                 <Select
                   value={sortBy}
                   label="Sort by"
-                  onChange={(e) => setSortBy(e.target.value as 'wins' | 'rp' | 'rank' | 'name')}
+                  onChange={(e) => setSortBy(e.target.value as 'group_points' | 'wins' | 'rp' | 'rank' | 'name')}
                 >
+                  <MenuItem value="group_points">Group Points</MenuItem>
                   <MenuItem value="wins">Win Record</MenuItem>
                   <MenuItem value="rp">Ranking Points</MenuItem>
                   <MenuItem value="rank">Global Rank</MenuItem>
@@ -444,6 +452,28 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                             }}
                           >
                             {team.points_differential && team.points_differential > 0 ? '+' : ''}{team.points_differential || 0}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Box sx={{ 
+                          textAlign: 'center', 
+                          p: 1, 
+                          bgcolor: 'rgba(0, 123, 255, 0.1)', 
+                          borderRadius: 1,
+                          border: '1px solid rgba(0, 123, 255, 0.2)'
+                        }}>
+                          <Typography variant="caption" color="primary" display="block" sx={{ fontWeight: 500 }}>
+                            Group Points
+                          </Typography>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontWeight: 700, 
+                              color: 'primary.main'
+                            }}
+                          >
+                            {team.group_points || 0}
                           </Typography>
                         </Box>
                       </Grid>

@@ -375,9 +375,125 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
-      }
-    }
-    Views: {
+      },
+      match_points: {
+        Row: {
+          id: string
+          match_id: string
+          team_id: string
+          group_id: string | null
+          points_earned: number
+          point_type: 'win_by_20_plus' | 'regular_win' | 'loss' | 'forfeit'
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          match_id: string
+          team_id: string
+          group_id?: string | null
+          points_earned: number
+          point_type: 'win_by_20_plus' | 'regular_win' | 'loss' | 'forfeit'
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          match_id?: string
+          team_id?: string
+          group_id?: string | null
+          points_earned?: number
+          point_type?: 'win_by_20_plus' | 'regular_win' | 'loss' | 'forfeit'
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_points_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_points_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_points_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "event_groups"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
+      group_points_standings: {
+        Row: {
+          group_id: string | null
+          group_name: string | null
+          event_id: string | null
+          event_name: string | null
+          team_id: string | null
+          team_name: string | null
+          position: number | null
+          matches_played: number | null
+          wins: number | null
+          losses: number | null
+          total_points: number | null
+          wins_by_20_plus: number | null
+          regular_wins: number | null
+          forfeits: number | null
+          points_for: number | null
+          points_against: number | null
+          point_differential: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          group_name?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          team_id?: string | null
+          team_name?: string | null
+          position?: number | null
+          matches_played?: number | null
+          wins?: number | null
+          losses?: number | null
+          total_points?: number | null
+          wins_by_20_plus?: number | null
+          regular_wins?: number | null
+          forfeits?: number | null
+          points_for?: number | null
+          points_against?: number | null
+          point_differential?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          group_name?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          team_id?: string | null
+          team_name?: string | null
+          position?: number | null
+          matches_played?: number | null
+          wins?: number | null
+          losses?: number | null
+          total_points?: number | null
+          wins_by_20_plus?: number | null
+          regular_wins?: number | null
+          forfeits?: number | null
+          points_for?: number | null
+          points_against?: number | null
+          point_differential?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      },
       upcoming_matches_view: {
         Row: {
           id: string
@@ -408,7 +524,7 @@ export type Database = {
           [_ in never]: never
         }
         Relationships: []
-      }
+      },
       group_standings_view: {
         Row: {
           id: string
@@ -435,7 +551,7 @@ export type Database = {
           [_ in never]: never
         }
         Relationships: []
-      }
+      },
       group_matches_view: {
         Row: {
           id: string
@@ -472,7 +588,7 @@ export type Database = {
           [_ in never]: never
         }
         Relationships: []
-      }
+      },
       team_performance_summary: {
         Row: {
           id: string
@@ -495,7 +611,7 @@ export type Database = {
           [_ in never]: never
         }
         Relationships: []
-      }
+      },
       team_match_stats: {
         Row: {
           id: string
@@ -521,6 +637,244 @@ export type Database = {
         }
         Update: {
           [_ in never]: never
+        }
+        Relationships: []
+      },
+      tournament_schedule: {
+        Row: {
+          event_id: string | null
+          event_name: string | null
+          start_date: string | null
+          group_name: string | null
+          team_a_name: string | null
+          team_b_name: string | null
+          start_time: string | null
+          end_time: string | null
+          start_time_formatted: string | null
+          end_time_formatted: string | null
+          venue: string | null
+          status: string | null
+        }
+        Insert: {
+          event_id?: string | null
+          event_name?: string | null
+          start_date?: string | null
+          group_name?: string | null
+          team_a_name?: string | null
+          team_b_name?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          start_time_formatted?: string | null
+          end_time_formatted?: string | null
+          venue?: string | null
+          status?: string | null
+        }
+        Update: {
+          event_id?: string | null
+          event_name?: string | null
+          start_date?: string | null
+          group_name?: string | null
+          team_a_name?: string | null
+          team_b_name?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          start_time_formatted?: string | null
+          end_time_formatted?: string | null
+          venue?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      upcoming_matches_view: {
+        Row: {
+          id: string
+          event_id: string
+          event_name: string
+          team_a_id: string
+          team_a_name: string
+          team_b_id: string
+          team_b_name: string
+          scheduled_at: string
+          venue: string | null
+          stream_url: string | null
+          notes: string | null
+          status: string | null
+          group_id: string | null
+          group_name: string | null
+          round: number | null
+          match_number: number | null
+          event_banner_url: string | null
+          team_a_logo: string | null
+          team_b_logo: string | null
+          region_name: string | null
+        }
+        Insert: {
+          [_ in never]: never
+        }
+        Update: {
+          [_ in never]: never
+        }
+        Relationships: []
+      },
+      group_standings_view: {
+        Row: {
+          id: string
+          group_id: string
+          group_name: string
+          event_id: string
+          event_name: string
+          team_id: string
+          team_name: string
+          logo_url: string | null
+          position: number | null
+          matches_played: number | null
+          wins: number | null
+          losses: number | null
+          points_for: number | null
+          points_against: number | null
+          point_differential: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          [_ in never]: never
+        }
+        Update: {
+          [_ in never]: never
+        }
+        Relationships: []
+      },
+      group_matches_view: {
+        Row: {
+          id: string
+          group_id: string
+          group_name: string
+          event_id: string
+          event_name: string
+          match_id: string
+          round: number | null
+          match_number: number | null
+          team_a_id: string
+          team_a_name: string
+          team_a_score: number | null
+          team_b_id: string
+          team_b_name: string
+          team_b_score: number | null
+          scheduled_at: string | null
+          status: string | null
+          venue: string | null
+          stream_url: string | null
+          notes: string | null
+          team_a_logo: string | null
+          team_b_logo: string | null
+          winner_id: string | null
+          winner_name: string | null
+          loser_id: string | null
+          loser_name: string | null
+          is_tie: boolean | null
+        }
+        Insert: {
+          [_ in never]: never
+        }
+        Update: {
+          [_ in never]: never
+        }
+        Relationships: []
+      },
+      team_performance_summary: {
+        Row: {
+          id: string
+          name: string
+          region_id: string | null
+          region_name: string | null
+          current_rp: number | null
+          elo_rating: number | null
+          global_rank: number | null
+          total_matches: number | null
+          matches_won: number | null
+          matches_lost: number | null
+          win_percentage: number | null
+          leaderboard_tier: string | null
+        }
+        Insert: {
+          [_ in never]: never
+        }
+        Update: {
+          [_ in never]: never
+        }
+        Relationships: []
+      },
+      team_match_stats: {
+        Row: {
+          id: string
+          match_id: string
+          team_id: string
+          points: number | null
+          rebounds: number | null
+          assists: number | null
+          steals: number | null
+          blocks: number | null
+          turnovers: number | null
+          field_goals_made: number | null
+          field_goals_attempted: number | null
+          three_points_made: number | null
+          three_points_attempted: number | null
+          free_throws_made: number | null
+          free_throws_attempted: number | null
+          fouls: number | null
+          plus_minus: number | null
+        }
+        Insert: {
+          [_ in never]: never
+        }
+        Update: {
+          [_ in never]: never
+        }
+        Relationships: []
+      },
+      tournament_schedule: {
+        Row: {
+          event_id: string | null
+          event_name: string | null
+          start_date: string | null
+          group_name: string | null
+          team_a_name: string | null
+          team_b_name: string | null
+          start_time: string | null
+          end_time: string | null
+          start_time_formatted: string | null
+          end_time_formatted: string | null
+          venue: string | null
+          status: string | null
+        }
+        Insert: {
+          event_id?: string | null
+          event_name?: string | null
+          start_date?: string | null
+          group_name?: string | null
+          team_a_name?: string | null
+          team_b_name?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          start_time_formatted?: string | null
+          end_time_formatted?: string | null
+          venue?: string | null
+          status?: string | null
+        }
+        Update: {
+          event_id?: string | null
+          event_name?: string | null
+          start_date?: string | null
+          group_name?: string | null
+          team_a_name?: string | null
+          team_b_name?: string | null
+          start_time?: string | null
+          end_time?: string | null
+          start_time_formatted?: string | null
+          end_time_formatted?: string | null
+          venue?: string | null
+          status?: string | null
         }
         Relationships: []
       }

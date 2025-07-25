@@ -205,6 +205,63 @@ export type DraftPool = {
   event?: Event;
 };
 
+export type MatchPoints = {
+  id: string;
+  match_id: string;
+  team_id: string;
+  group_id: string | null;
+  points_earned: number;
+  point_type: 'win_by_20_plus' | 'regular_win' | 'loss' | 'forfeit';
+  created_at: string;
+  updated_at: string;
+  match?: Match;
+  team?: Team;
+  group?: EventGroup;
+};
+
+export type GroupPointsStanding = {
+  group_id: string | null;
+  group_name: string | null;
+  event_id: string | null;
+  event_name: string | null;
+  team_id: string | null;
+  team_name: string | null;
+  position: number | null;
+  matches_played: number | null;
+  wins: number | null;
+  losses: number | null;
+  total_points: number | null;
+  wins_by_20_plus: number | null;
+  regular_wins: number | null;
+  forfeits: number | null;
+  points_for: number | null;
+  points_against: number | null;
+  point_differential: number | null;
+  updated_at: string | null;
+  team?: Team;
+  event?: Event;
+  group?: EventGroup;
+};
+
+export type TournamentSchedule = {
+  event_id: string | null;
+  event_name: string | null;
+  start_date: string | null;
+  group_name: string | null;
+  team_a_name: string | null;
+  team_b_name: string | null;
+  team_a_score?: number | null;
+  team_b_score?: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  start_time_formatted: string | null;
+  end_time_formatted: string | null;
+  venue: string | null;
+  status: string | null;
+  notes?: string | null;
+  event?: Event;
+};
+
 // View Types
 export type TeamPerformanceSummary = {
   id: string;

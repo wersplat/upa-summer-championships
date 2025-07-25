@@ -176,6 +176,7 @@ interface TeamWithStats extends Omit<TeamWithRegion, 'elo_rating'> {
     points_for: number;
     points_against: number;
     points_differential: number;
+    group_points: number;
   };
   captain: TeamCaptain | null;
 }
@@ -184,33 +185,30 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
     
-    // First, get teams that have roster entries for the specific event
-    const { data: teamRosters, error: rosterError } = await supabase
-      .from('team_rosters')
-      .select('team_id')
-      .eq('event_id', eventId);
+    // Get team standings with group points from the view for the specific event
+    const { data: standings, error: standingsError } = await supabase
+      .from('group_points_standings')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('total_points', { ascending: false })
+      .order('point_differential', { ascending: false })
+      .limit(6);
 
-    if (rosterError) {
-      console.error('Error fetching team rosters:', rosterError);
-      throw rosterError;
+    if (standingsError) {
+      console.error('Error fetching group standings:', standingsError);
+      throw standingsError;
     }
 
-    // Extract unique team IDs from rosters
-    const uniqueTeamIds = new Set<string>();
-    teamRosters?.forEach(roster => {
-      if (roster.team_id) uniqueTeamIds.add(roster.team_id);
-    });
-
-    console.log(`Found ${uniqueTeamIds.size} teams with rosters for event ${eventId}`);
-
-    // If no teams found for this event, return empty array
-    if (uniqueTeamIds.size === 0) {
-      console.log('No team rosters found for event');
+    if (!standings || standings.length === 0) {
+      console.log('No team standings found');
       return [];
     }
 
-    // Get the top teams by current_rp that are in our event
-    const { data: teams, error } = await supabase
+    // Get team IDs from standings
+    const teamIds = standings.map(standing => standing.team_id);
+
+    // Get detailed team info for the top teams
+    const { data: teams, error: teamsError } = await supabase
       .from('teams')
       .select(`
         id,
@@ -222,7 +220,7 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
         leaderboard_tier,
         created_at,
         regions (id, name),
-        team_rosters!inner (
+        team_rosters (
           id,
           is_captain,
           players (
@@ -231,42 +229,14 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
           )
         )
       `)
-      .in('id', Array.from(uniqueTeamIds))
-      .eq('team_rosters.is_captain', true)
-      .order('current_rp', { ascending: false })
-      .limit(6);
+      .in('id', teamIds);
 
-    if (error) throw error;
+    if (teamsError) throw teamsError;
     if (!teams) return [];
 
-    // Get match data for all teams
-    const teamIds = teams.map(team => team.id);
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('*')
-      .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`);
-
-    // Calculate stats and captain to each team
+    // Combine standings data with team details
     const teamsWithStats = teams.map(team => {
-      const teamMatches = (matches || []).filter(match => 
-        match.team_a_id === team.id || match.team_b_id === team.id
-      );
-      
-      const wins = teamMatches.filter(match => {
-        if (match.team_a_id === team.id) return (match.score_a || 0) > (match.score_b || 0);
-        return (match.score_b || 0) > (match.score_a || 0);
-      }).length;
-      
-      const pointsFor = teamMatches.reduce((total, match) => {
-        return total + (match.team_a_id === team.id ? (match.score_a || 0) : (match.score_b || 0));
-      }, 0);
-      
-      const pointsAgainst = teamMatches.reduce((total, match) => {
-        return total + (match.team_a_id === team.id ? (match.score_b || 0) : (match.score_a || 0));
-      }, 0);
-      
-      const losses = teamMatches.length - wins;
-      const pointsDifferential = pointsFor - pointsAgainst;
+      const standing = standings.find(s => s.team_id === team.id);
       
       // Find the captain from team_rosters
       const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
@@ -279,19 +249,20 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
           gamertag: captainPlayer.gamertag
         } : null,
         stats: {
-          wins,
-          losses,
-          points_for: pointsFor,
-          points_against: pointsAgainst,
-          points_differential: pointsDifferential
+          wins: standing?.wins || 0,
+          losses: standing?.losses || 0,
+          points_for: standing?.points_for || 0,
+          points_against: standing?.points_against || 0,
+          points_differential: standing?.point_differential || 0,
+          group_points: standing?.total_points || 0
         }
       };
     });
 
-    // Sort by wins, then point differential
+    // Sort by group points, then point differential
     return teamsWithStats.sort((a, b) => {
-      if (a.stats.wins !== b.stats.wins) {
-        return b.stats.wins - a.stats.wins;
+      if (b.stats.group_points !== a.stats.group_points) {
+        return b.stats.group_points - a.stats.group_points;
       }
       return b.stats.points_differential - a.stats.points_differential;
     });
@@ -459,14 +430,22 @@ export default async function Home() {
         
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={7}>
-            <Typography variant="body2" sx={{ mb: 1.5, color: 'text.primary' }}>
-              Teams are ranked by <strong>wins</strong>, then by <strong>points differential</strong> (total points scored minus points allowed). 
-              Higher win percentage and positive point differential indicate stronger performance.
-            </Typography>
+            <Box component="div" sx={{ mb: 1.5, color: 'text.primary' }}>
+              <Box component="ul" sx={{ pl: 2, mb: 2, mt: 0 }}>
+                <li><strong>5 points</strong> — Win by 20+ points</li>
+                <li><strong>3 points</strong> — Regular win (win by less than 20 points)</li>
+                <li><strong>1 point</strong> — Loss</li>
+                <li><strong>0 points</strong> — Forfeit</li>
+              </Box>
+              <Typography variant="body2" component="div">
+                Teams are ranked by <strong>total points</strong>, then by <strong>points differential</strong> (total points scored minus points allowed). 
+                In case of a tie in points, the team with the better point differential will be ranked higher.
+              </Typography>
+            </Box>
             
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Chip 
-                label="Wins First" 
+                label="Points (5/3/1/0)" 
                 size="small" 
                 sx={{ 
                   bgcolor: 'primary.main', 
@@ -484,7 +463,7 @@ export default async function Home() {
                 }}
               />
               <Chip 
-                label="Clear Rankings" 
+                label="Head-to-Head" 
                 size="small" 
                 sx={{ 
                   bgcolor: 'success.main', 
@@ -512,10 +491,10 @@ export default async function Home() {
                 aria-label="Wins statistic"
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  WINS
+                  POINTS
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Primary Rank
+                  5/3/1/0 System
                 </Typography>
               </Box>
               
@@ -534,10 +513,10 @@ export default async function Home() {
                 aria-label="Losses statistic"
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  LOSSES
+                  WIN %
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Record
+                  Win Percentage
                 </Typography>
               </Box>
               
@@ -669,17 +648,14 @@ export default async function Home() {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Record
+                        Group Points
                       </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
-                          {team.stats?.wins || 0}
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                        {team.stats?.group_points || 0}
+                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.5, fontWeight: 400 }}>
+                          pts
                         </Typography>
-                        <Typography variant="body1" color="text.secondary">-</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'error.main' }}>
-                          {team.stats?.losses || 0}
-                        </Typography>
-                      </Box>
+                      </Typography>
                     </Box>
                     <Box sx={{ textAlign: 'right' }}>
                       <Typography variant="body2" color="text.secondary">
