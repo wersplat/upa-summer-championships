@@ -771,7 +771,8 @@ export default async function Home() {
                   stats={{
                     field_goal_percentage: player.field_goal_percentage,
                     steals_per_game: player.steals_per_game,
-                    blocks_per_game: player.blocks_per_game
+                    blocks_per_game: player.blocks_per_game,
+                    rebounds_per_game: player.rebounds_per_game
                   }}
                 />
               ))}

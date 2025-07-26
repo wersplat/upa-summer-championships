@@ -27,6 +27,9 @@ interface PlayerCardProps {
     field_goal_percentage?: number;
     points_per_game?: number;
     assists_per_game?: number;
+    steals_per_game?: number;
+    blocks_per_game?: number;
+    rebounds_per_game?: number;
     [key: string]: number | undefined;
   };
   onClick?: () => void;
@@ -167,7 +170,8 @@ export default function PlayerCard({
                   lineHeight: 1.2,
                   py: 0.25,
                   borderColor: 'divider',
-                  bgcolor: 'background.paper'
+                  bgcolor: 'background.paper',
+                  display: stats.steals_per_game === undefined ? 'flex' : 'none'
                 }}
               />
             )}
@@ -175,6 +179,52 @@ export default function PlayerCard({
               <Chip 
                 size="small" 
                 label={`${stats.assists_per_game.toFixed(1)} APG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  display: stats.steals_per_game === undefined ? 'flex' : 'none'
+                }}
+              />
+            )}
+            {stats.steals_per_game !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.steals_per_game.toFixed(1)} SPG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+            )}
+            {stats.blocks_per_game !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.blocks_per_game.toFixed(1)} BPG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+            )}
+            {stats.rebounds_per_game !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.rebounds_per_game.toFixed(1)} RPG`}
                 variant="outlined"
                 sx={{ 
                   height: 'auto', 
