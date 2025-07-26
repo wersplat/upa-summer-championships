@@ -72,9 +72,9 @@ const PlayerCard = ({ player, rank, category }: { player: PlayerStats; rank: num
   const secondaryStats = React.useMemo(() => {
     switch (category) {
       case 'omvp':
-        return `${player.assists_per_game.toFixed(1)} APG • ${(player.field_goal_percentage * 100).toFixed(1)}% FG`;
+        return `${player.assists_per_game.toFixed(1)} APG • ${player.steals_per_game.toFixed(1)} SPG • ${(player.field_goal_percentage * 100).toFixed(1)}% FG`;
       case 'dmvp':
-        return `${player.blocks_per_game.toFixed(1)} BPG • ${player.rebounds_per_game.toFixed(1)} RPG`;
+        return `${player.steals_per_game.toFixed(1)} SPG • ${player.blocks_per_game.toFixed(1)} BPG • ${player.rebounds_per_game.toFixed(1)} RPG`;
       case 'rookie':
         return `${player.points_per_game.toFixed(1)} PPG • ${player.assists_per_game.toFixed(1)} APG`;
       default:
