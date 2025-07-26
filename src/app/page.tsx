@@ -738,6 +738,11 @@ export default async function Home() {
                   avatarColor="primary.main"
                   isHighlighted={index === 0}
                   rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    points_per_game: player.points_per_game,
+                    assists_per_game: player.assists_per_game
+                  }}
                 />
               ))}
             </StandardCard>
@@ -763,6 +768,11 @@ export default async function Home() {
                   avatarColor="info.main"
                   isHighlighted={index === 0}
                   rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    steals_per_game: player.steals_per_game,
+                    blocks_per_game: player.blocks_per_game
+                  }}
                 />
               ))}
             </StandardCard>
@@ -788,6 +798,11 @@ export default async function Home() {
                   avatarColor="warning.main"
                   isHighlighted={index === 0}
                   rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    points_per_game: player.points_per_game,
+                    assists_per_game: player.assists_per_game
+                  }}
                 />
               ))}
             </StandardCard>

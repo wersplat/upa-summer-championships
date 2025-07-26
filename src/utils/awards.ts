@@ -24,36 +24,33 @@ export interface PlayerAwardStats {
 
 export async function getAwardsData() {
   try {
+    // Log environment variables (in development only)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Present' : 'Missing');
+      console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Present' : 'Missing');
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { auth: { persistSession: false } }
     );
-
-    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
     
-    // First, get player IDs that have roster entries for the specific event
-    const { data: teamRosters, error: rosterError } = await supabase
-      .from('team_rosters')
-      .select('player_id')
-      .eq('event_id', eventId)
-      .is('left_at', null);
-
-    if (rosterError) {
-      console.error('Error fetching team rosters:', rosterError);
-      throw rosterError;
+    // Test the connection first
+    const { error: testError } = await supabase
+      .from('players')
+      .select('id')
+      .limit(1);
+      
+    if (testError) {
+      console.error('Supabase connection test failed:', testError);
+      throw testError;
     }
-
-    // Extract unique player IDs from rosters
-    const playerIds = Array.from(new Set(teamRosters?.map(roster => roster.player_id).filter(Boolean)));
     
-    if (playerIds.length === 0) {
-      console.log('No players found for the event');
-      return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
-    }
-
-    // Get all players with their team info, filtered by event ID
-    const { data: players, error: playersError } = await supabase
+    console.log('Supabase connection successful, fetching players...');
+    
+    // Get all players with their team info
+    const { data: players, error: playersError, status, statusText } = await supabase
       .from('players')
       .select(`
         id,
@@ -61,7 +58,6 @@ export async function getAwardsData() {
         position,
         team_rosters!inner (
           team_id,
-          event_id,
           teams!inner (
             id,
             name,
@@ -69,41 +65,129 @@ export async function getAwardsData() {
           )
         )
       `)
-      .in('id', playerIds)
-      .eq('team_rosters.event_id', eventId)
       .order('gamertag');
-
-    if (playersError) throw playersError;
-    if (!players || players.length === 0) return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
-
-    // Define a simplified type for the raw player data from the database
-    interface RawPlayer {
-      id: string;
-      gamertag: string;
-      position: string | null;
-      team_rosters: Array<{
-        team_id: string;
-        event_id: string;
-        teams: Array<{
-          id: string;
-          name: string;
-          logo_url: string | null;
-        }>;
-      }>;
+      
+    console.log(`Query status: ${status} - ${statusText}`);
+    console.log('Number of players found:', players?.length || 0);
+    
+    if (playersError) {
+      console.error('Detailed Supabase error:', {
+        message: playersError.message,
+        details: playersError.details,
+        hint: playersError.hint,
+        code: playersError.code
+      });
+      throw playersError;
     }
+
+    if (!players || players.length === 0) {
+      console.warn('No player data returned from the database');
+      return {
+        omvpCandidates: [],
+        dmvpCandidates: [],
+        rookieCandidates: []
+      };
+    }
+
+    console.log('First player sample:', JSON.stringify(players[0], null, 2));
 
     // Get stats for all players
     const playersWithStats = [];
-    for (const player of players as unknown as RawPlayer[]) {
-      const { data: stats } = await supabase
+    console.log('Fetching player stats...');
+    
+    for (const player of players) {
+      // Get all stats rows for the player
+      const { data: statsList, error: statsError } = await supabase
         .from('player_stats')
         .select('*')
-        .eq('player_id', player.id)
-        .single();
+        .eq('player_id', player.id);
         
-      if (stats) {
+      if (statsError) {
+        console.error(`Error fetching stats for player ${player.id} (${player.gamertag}):`, statsError);
+        continue;
+      }
+      
+      if (statsList && statsList.length > 0) {
+        console.log(`Raw stats for ${player.gamertag}:`, JSON.stringify(statsList, null, 2));
+        
+        // Aggregate stats if there are multiple entries
+        const aggregatedStats = {
+          points_per_game: 0,
+          assists_per_game: 0,
+          field_goal_percentage: 0,
+          three_point_percentage: 0,
+          steals_per_game: 0,
+          blocks_per_game: 0,
+          rebounds_per_game: 0,
+          games_played: statsList.length, // Each stat entry represents one game
+          is_rookie: statsList.some(stat => stat.is_rookie),
+          overall_rating: 0
+        };
+
+        // Sum up stats from all entries
+        statsList.forEach(stat => {
+          console.log(`Processing stat entry for ${player.gamertag}:`, {
+            points: stat.points,
+            assists: stat.assists,
+            fg: stat.fgm && stat.fga ? (stat.fgm / stat.fga) * 100 : 0,
+            raw_stat: stat
+          });
+          
+          aggregatedStats.points_per_game += Number(stat.points) || 0;
+          aggregatedStats.assists_per_game += Number(stat.assists) || 0;
+          aggregatedStats.steals_per_game += Number(stat.steals) || 0;
+          aggregatedStats.blocks_per_game += Number(stat.blocks) || 0;
+          aggregatedStats.rebounds_per_game += Number(stat.rebounds) || 0;
+          
+          // Calculate field goal percentage for this game
+          if (stat.fga > 0) {
+            const gameFgPct = (stat.fgm / stat.fga) * 100;
+            console.log(`Game FG% for ${player.gamertag}:`, {
+              fgm: stat.fgm,
+              fga: stat.fga,
+              fgPct: gameFgPct.toFixed(1) + '%',
+              gameId: stat.match_id
+            });
+            aggregatedStats.field_goal_percentage += gameFgPct;
+          }
+          
+          // Calculate three point percentage for this game
+          if (stat.three_points_attempted > 0) {
+            aggregatedStats.three_point_percentage += (stat.three_points_made / stat.three_points_attempted) * 100;
+          }
+          
+          // Calculate overall rating (example formula, adjust as needed)
+          aggregatedStats.overall_rating += (
+            (Number(stat.points) || 0) +
+            (Number(stat.assists) * 1.5) +
+            (Number(stat.rebounds) * 1.2) +
+            (Number(stat.steals) * 2) +
+            (Number(stat.blocks) * 2) -
+            (Number(stat.turnovers) * 1.5)
+          );
+        });
+
+        // Calculate averages
+        const gameCount = aggregatedStats.games_played;
+        if (gameCount > 0) {
+          aggregatedStats.points_per_game = aggregatedStats.points_per_game / gameCount;
+          aggregatedStats.assists_per_game = aggregatedStats.assists_per_game / gameCount;
+          aggregatedStats.steals_per_game = aggregatedStats.steals_per_game / gameCount;
+          aggregatedStats.blocks_per_game = aggregatedStats.blocks_per_game / gameCount;
+          aggregatedStats.rebounds_per_game = aggregatedStats.rebounds_per_game / gameCount;
+          aggregatedStats.field_goal_percentage = aggregatedStats.field_goal_percentage / gameCount;
+          aggregatedStats.three_point_percentage = aggregatedStats.three_point_percentage / gameCount;
+          aggregatedStats.overall_rating = aggregatedStats.overall_rating / gameCount;
+        }
+        
         const teamRoster = player.team_rosters?.[0];
-        const team = teamRoster?.teams?.[0];
+        const team = teamRoster?.teams;
+        
+        console.log(`Player ${player.gamertag} team data:`, {
+          teamRoster,
+          team,
+          hasTeam: !!team
+        });
         
         playersWithStats.push({
           id: player.id,
@@ -112,33 +196,29 @@ export async function getAwardsData() {
           team_id: team?.id || '',
           team_name: team?.name || 'Free Agent',
           team_logo_url: team?.logo_url || null,
-          points_per_game: stats.points_per_game || 0,
-          assists_per_game: stats.assists_per_game || 0,
-          field_goal_percentage: stats.field_goal_percentage || 0,
-          three_point_percentage: stats.three_point_percentage || 0,
-          steals_per_game: stats.steals_per_game || 0,
-          blocks_per_game: stats.blocks_per_game || 0,
-          rebounds_per_game: stats.rebounds_per_game || 0,
-          games_played: stats.games_played || 0,
-          is_rookie: stats.is_rookie || false,
-          overall_rating: stats.overall_rating || 0
+          ...aggregatedStats
         });
+      } else {
+        console.log(`No stats found for player ${player.id} (${player.gamertag})`);
       }
     }
     
+    console.log(`Processed ${playersWithStats.length} players with stats`);
+    
     // Filter out players with no games played
     const processedPlayers = playersWithStats.filter(player => player.games_played > 0);
+    console.log(`Players with games played: ${processedPlayers.length}`);
 
     // Calculate OMVP candidates (top 5 by offensive rating)
     const omvpCandidates = processedPlayers
       .map((player) => ({
         ...player,
         offensive_rating: (player.points_per_game * 0.4) + 
-                        (player.assists_per_game * 0.3) + 
-                        (player.field_goal_percentage * 0.2) + 
-                        (player.three_point_percentage * 0.1)
+                         (player.assists_per_game * 0.3) + 
+                         (player.field_goal_percentage * 0.2) + 
+                         (player.three_point_percentage * 0.1)
       }))
-      .sort((a, b) => (b.offensive_rating || 0) - (a.offensive_rating || 0))
+      .sort((a, b) => b.offensive_rating - a.offensive_rating)
       .slice(0, 5);
 
     // Calculate DMVP candidates (top 5 by defensive rating)
@@ -149,7 +229,7 @@ export async function getAwardsData() {
                          (player.blocks_per_game * 0.3) + 
                          (player.rebounds_per_game * 0.3)
       }))
-      .sort((a, b) => (b.defensive_rating || 0) - (a.defensive_rating || 0))
+      .sort((a, b) => b.defensive_rating - a.defensive_rating)
       .slice(0, 5);
 
     // Calculate Rookie candidates (top 5 rookies by overall performance)
@@ -163,12 +243,31 @@ export async function getAwardsData() {
                       (player.field_goal_percentage * 0.15) + 
                       (player.overall_rating * 0.15)
       }))
-      .sort((a, b) => (b.rookie_rating || 0) - (a.rookie_rating || 0))
+      .sort((a, b) => b.rookie_rating - a.rookie_rating)
       .slice(0, 5);
 
-    return { omvpCandidates, dmvpCandidates, rookieCandidates };
+    console.log('Successfully processed awards data', {
+      totalPlayers: processedPlayers.length,
+      omvpCandidates: omvpCandidates.length,
+      dmvpCandidates: dmvpCandidates.length,
+      rookieCandidates: rookieCandidates.length,
+      sampleOmvp: omvpCandidates[0],
+      sampleDmvp: dmvpCandidates[0],
+      sampleRookie: rookieCandidates[0]
+    });
+    
+    return {
+      omvpCandidates,
+      dmvpCandidates,
+      rookieCandidates
+    };
   } catch (error) {
     console.error('Error in getAwardsData:', error);
-    return { omvpCandidates: [], dmvpCandidates: [], rookieCandidates: [] };
+    // Return empty arrays to prevent the page from breaking
+    return {
+      omvpCandidates: [],
+      dmvpCandidates: [],
+      rookieCandidates: []
+    };
   }
 }

@@ -23,6 +23,12 @@ interface PlayerCardProps {
   avatarColor?: string;
   isHighlighted?: boolean;
   rank?: number;
+  stats?: {
+    field_goal_percentage?: number;
+    points_per_game?: number;
+    assists_per_game?: number;
+    [key: string]: number | undefined;
+  };
   onClick?: () => void;
 }
 
@@ -52,6 +58,7 @@ export default function PlayerCard({
   avatarColor,  // Will be determined automatically if not provided
   isHighlighted = false,
   rank,
+  stats,
   onClick,
 }: PlayerCardProps) {
   // Medal emojis for top 3 ranks
@@ -127,9 +134,60 @@ export default function PlayerCard({
           )}
         </Box>
         
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
           {position && position}{position && teamName && ' • '}{teamName || 'No Team'}
         </Typography>
+        
+        {/* Stats row */}
+        {stats && (
+          <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+            {stats.field_goal_percentage !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.field_goal_percentage.toFixed(1)}% FG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+            )}
+            {stats.points_per_game !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.points_per_game.toFixed(1)} PPG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+            )}
+            {stats.assists_per_game !== undefined && (
+              <Chip 
+                size="small" 
+                label={`${stats.assists_per_game.toFixed(1)} APG`}
+                variant="outlined"
+                sx={{ 
+                  height: 'auto', 
+                  fontSize: '0.6rem',
+                  lineHeight: 1.2,
+                  py: 0.25,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper'
+                }}
+              />
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );
