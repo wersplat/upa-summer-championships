@@ -249,13 +249,13 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
             ? aggregatedStats.total_blocks / aggregatedStats.games_played 
             : 0,
           field_goal_percentage: aggregatedStats.total_fga > 0 
-            ? (aggregatedStats.total_fgm / aggregatedStats.total_fga) * 100 
+            ? (aggregatedStats.total_fgm / aggregatedStats.total_fga) 
             : 0,
           three_point_percentage: aggregatedStats.total_3pa > 0 
-            ? (aggregatedStats.total_3pm / aggregatedStats.total_3pa) * 100 
+            ? (aggregatedStats.total_3pm / aggregatedStats.total_3pa) 
             : 0,
           free_throw_percentage: aggregatedStats.total_fta > 0 
-            ? (aggregatedStats.total_ftm / aggregatedStats.total_fta) * 100 
+            ? (aggregatedStats.total_ftm / aggregatedStats.total_fta) 
             : 0,
           turnovers_per_game: aggregatedStats.games_played > 0 
             ? aggregatedStats.total_turnovers / aggregatedStats.games_played 
