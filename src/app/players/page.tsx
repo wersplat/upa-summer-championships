@@ -147,10 +147,49 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
       console.error('Error fetching player stats:', statsError);
     }
     
-    // Create a map of player_id to stats for quick lookup
-    const statsMap = new Map(
-      (statsData || []).map(stat => [stat.player_id, stat])
-    );
+    // Create a map of player_id to aggregated stats
+    const statsMap = new Map<string, any>();
+    
+    // Aggregate stats by player_id
+    statsData?.forEach(stat => {
+      const playerId = stat.player_id;
+      if (!statsMap.has(playerId)) {
+        statsMap.set(playerId, {
+          games_played: 0,
+          total_points: 0,
+          total_assists: 0,
+          total_rebounds: 0,
+          total_steals: 0,
+          total_blocks: 0,
+          total_fgm: 0,
+          total_fga: 0,
+          total_3pm: 0,
+          total_3pa: 0,
+          total_ftm: 0,
+          total_fta: 0,
+          total_turnovers: 0,
+          total_fouls: 0,
+          total_plus_minus: 0
+        });
+      }
+      
+      const playerStats = statsMap.get(playerId)!;
+      playerStats.games_played++;
+      playerStats.total_points += Number(stat.points) || 0;
+      playerStats.total_assists += Number(stat.assists) || 0;
+      playerStats.total_rebounds += Number(stat.rebounds) || 0;
+      playerStats.total_steals += Number(stat.steals) || 0;
+      playerStats.total_blocks += Number(stat.blocks) || 0;
+      playerStats.total_fgm += Number(stat.fgm) || 0;
+      playerStats.total_fga += Number(stat.fga) || 0;
+      playerStats.total_3pm += Number(stat.three_points_made) || 0;
+      playerStats.total_3pa += Number(stat.three_points_attempted) || 0;
+      playerStats.total_ftm += Number(stat.ftm) || 0;
+      playerStats.total_fta += Number(stat.fta) || 0;
+      playerStats.total_turnovers += Number(stat.turnovers) || 0;
+      playerStats.total_fouls += Number(stat.fouls) || 0;
+      playerStats.total_plus_minus += Number(stat.plus_minus) || 0;
+    });
     
     // Process player data to match expected interface
     const playersWithStats: PlayerWithTeam[] = [];
@@ -176,8 +215,8 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
         }
       }
       
-      // Get player stats from the map
-      const playerStats = statsMap.get(player.id);
+      // Get aggregated player stats
+      const aggregatedStats = statsMap.get(player.id);
       
       playersWithStats.push({
         id: player.id,
@@ -192,19 +231,41 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
         created_at: player.created_at,
         avatar_url: null,
         teams: playerTeams,
-        stats: playerStats ? {
-          games_played: playerStats.games_played || 0,
-          points_per_game: playerStats.points_per_game || 0,
-          assists_per_game: playerStats.assists_per_game || 0,
-          rebounds_per_game: playerStats.rebounds_per_game || 0,
-          steals_per_game: playerStats.steals_per_game || 0,
-          blocks_per_game: playerStats.blocks_per_game || 0,
-          field_goal_percentage: playerStats.field_goal_percentage || 0,
-          three_point_percentage: playerStats.three_point_percentage || 0,
-          free_throw_percentage: playerStats.free_throw_percentage || 0,
-          turnovers_per_game: playerStats.turnovers_per_game || 0,
-          fouls_per_game: playerStats.fouls_per_game || 0,
-          plus_minus: playerStats.plus_minus || 0,
+        stats: aggregatedStats ? {
+          games_played: aggregatedStats.games_played,
+          points_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_points / aggregatedStats.games_played 
+            : 0,
+          assists_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_assists / aggregatedStats.games_played 
+            : 0,
+          rebounds_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_rebounds / aggregatedStats.games_played 
+            : 0,
+          steals_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_steals / aggregatedStats.games_played 
+            : 0,
+          blocks_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_blocks / aggregatedStats.games_played 
+            : 0,
+          field_goal_percentage: aggregatedStats.total_fga > 0 
+            ? (aggregatedStats.total_fgm / aggregatedStats.total_fga) * 100 
+            : 0,
+          three_point_percentage: aggregatedStats.total_3pa > 0 
+            ? (aggregatedStats.total_3pm / aggregatedStats.total_3pa) * 100 
+            : 0,
+          free_throw_percentage: aggregatedStats.total_fta > 0 
+            ? (aggregatedStats.total_ftm / aggregatedStats.total_fta) * 100 
+            : 0,
+          turnovers_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_turnovers / aggregatedStats.games_played 
+            : 0,
+          fouls_per_game: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_fouls / aggregatedStats.games_played 
+            : 0,
+          plus_minus: aggregatedStats.games_played > 0 
+            ? aggregatedStats.total_plus_minus / aggregatedStats.games_played 
+            : 0,
         } : {
           games_played: 0,
           points_per_game: 0,
