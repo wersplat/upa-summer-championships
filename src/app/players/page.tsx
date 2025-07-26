@@ -137,6 +137,21 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
       
     if (error) throw error;
     
+    // Get player stats in batch for better performance
+    const { data: statsData, error: statsError } = await supabase
+      .from('player_stats')
+      .select('*')
+      .in('player_id', players.map(p => p.id));
+    
+    if (statsError) {
+      console.error('Error fetching player stats:', statsError);
+    }
+    
+    // Create a map of player_id to stats for quick lookup
+    const statsMap = new Map(
+      (statsData || []).map(stat => [stat.player_id, stat])
+    );
+    
     // Process player data to match expected interface
     const playersWithStats: PlayerWithTeam[] = [];
     
@@ -161,12 +176,8 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
         }
       }
       
-      // Get player stats (simplified - adjust based on your actual stats structure)
-      const { data: stats } = await supabase
-        .from('player_stats')
-        .select('*')
-        .eq('player_id', player.id)
-        .single();
+      // Get player stats from the map
+      const playerStats = statsMap.get(player.id);
       
       playersWithStats.push({
         id: player.id,
@@ -179,21 +190,21 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
         player_rank_score: player.player_rank_score,
         monthly_value: player.monthly_value,
         created_at: player.created_at,
-        avatar_url: null, // Not available in database
+        avatar_url: null,
         teams: playerTeams,
-        stats: stats ? {
-          games_played: stats.games_played || 0,
-          points_per_game: stats.points_per_game || 0,
-          assists_per_game: stats.assists_per_game || 0,
-          rebounds_per_game: stats.rebounds_per_game || 0,
-          steals_per_game: stats.steals_per_game || 0,
-          blocks_per_game: stats.blocks_per_game || 0,
-          field_goal_percentage: stats.field_goal_percentage || 0,
-          three_point_percentage: stats.three_point_percentage || 0,
-          free_throw_percentage: stats.free_throw_percentage || 0,
-          turnovers_per_game: stats.turnovers_per_game || 0,
-          fouls_per_game: stats.fouls_per_game || 0,
-          plus_minus: stats.plus_minus || 0,
+        stats: playerStats ? {
+          games_played: playerStats.games_played || 0,
+          points_per_game: playerStats.points_per_game || 0,
+          assists_per_game: playerStats.assists_per_game || 0,
+          rebounds_per_game: playerStats.rebounds_per_game || 0,
+          steals_per_game: playerStats.steals_per_game || 0,
+          blocks_per_game: playerStats.blocks_per_game || 0,
+          field_goal_percentage: playerStats.field_goal_percentage || 0,
+          three_point_percentage: playerStats.three_point_percentage || 0,
+          free_throw_percentage: playerStats.free_throw_percentage || 0,
+          turnovers_per_game: playerStats.turnovers_per_game || 0,
+          fouls_per_game: playerStats.fouls_per_game || 0,
+          plus_minus: playerStats.plus_minus || 0,
         } : {
           games_played: 0,
           points_per_game: 0,
@@ -211,7 +222,7 @@ async function getPlayers(): Promise<PlayerWithTeam[]> {
       });
     }
     
-      // If we have players from the roster but no player details, try to get them
+    // If we have players from the roster but no player details, try to get them
     if (playersWithStats.length === 0 && playersMap.size > 0) {
       console.warn('Found rosters but no matching player details. This may indicate a data consistency issue.');
       
