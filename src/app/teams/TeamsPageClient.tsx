@@ -49,6 +49,14 @@ interface TeamWithRegion {
   losses?: number;
   points_differential?: number;
   group_points?: number;
+  stats?: {
+    wins: number;
+    losses: number;
+    points_for: number;
+    points_against: number;
+    points_differential: number;
+    group_points: number;
+  };
 }
 
 export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWithRegion[] }) {
@@ -356,16 +364,23 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                       }}
                     >
                       {team.logo_url ? (
-                        <img 
+                        <Avatar 
                           src={team.logo_url}
                           alt={team.name}
-                          style={{
-                            width: '100%',
+                          sx={{ 
+                            width: '100%', 
                             height: '100%',
-                            objectFit: 'contain',
-                            padding: 4
+                            bgcolor: 'background.paper',
+                            '& img': {
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                              padding: 1
+                            }
                           }}
-                          referrerPolicy="no-referrer"
+                          imgProps={{
+                            referrerPolicy: 'no-referrer'
+                          }}
                         />
                       ) : (
                         <Avatar 
@@ -429,7 +444,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                 <CardContent sx={{ pt: 0 }}>
                   <Box sx={{ mb: 2 }}>
                     <Grid container spacing={1}>
-                      <Grid item xs={6}>
+                      <Grid item xs={12}>
                         <Box sx={{ textAlign: 'center', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
                           <Typography variant="caption" color="text.secondary" display="block">
                             Record
@@ -473,7 +488,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                               color: 'primary.main'
                             }}
                           >
-                            {team.group_points || 0}
+                            {team.stats?.group_points ?? team.group_points ?? 0}
                           </Typography>
                         </Box>
                       </Grid>

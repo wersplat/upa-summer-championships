@@ -127,17 +127,27 @@ async function getTeams(): Promise<TeamWithRegion[]> {
       supabase
         .from('matches')
         .select('*')
-        .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`),
+        .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`)
+        .eq('event_id', eventId),
       supabase
         .from('group_points_standings')
-        .select('team_id, total_points')
+        .select('*')
         .in('team_id', teamIds)
+        .eq('event_id', eventId)  // Ensure we only get points for the current event
     ]);
 
-    // Create a map of team_id to group points for quick lookup
-    const groupPointsMap = new Map(
-      (groupPoints || []).map(gp => [gp.team_id, gp.total_points || 0])
-    );
+    // Create a map of team_id to group points and other stats for quick lookup
+    const teamStatsMap = new Map();
+    (groupPoints || []).forEach(gp => {
+      teamStatsMap.set(gp.team_id, {
+        total_points: gp.total_points || 0,
+        wins: gp.wins || 0,
+        losses: gp.losses || 0,
+        points_for: gp.points_for || 0,
+        points_against: gp.points_against || 0,
+        point_differential: gp.point_differential || 0
+      });
+    });
 
     // Calculate stats for each team
     const teamsWithStats = teams.map(team => {
@@ -165,16 +175,28 @@ async function getTeams(): Promise<TeamWithRegion[]> {
       const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
       const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
       
+      // Get stats from group_points_standings if available, otherwise use calculated values
+      const teamStats = teamStatsMap.get(team.id) || {
+        total_points: 0,
+        wins: teamWins,
+        losses: teamLosses,
+        points_for: teamPointsFor,
+        points_against: teamPointsAgainst,
+        point_differential: pointsDiff
+      };
+      
       return {
         ...team,
         captain: captainPlayer ? {
           id: captainPlayer.id,
           gamertag: captainPlayer.gamertag
         } : null,
-        wins: teamWins,
-        losses: teamLosses,
-        points_differential: pointsDiff,
-        group_points: groupPointsMap.get(team.id) || 0
+        wins: teamStats.wins,
+        losses: teamStats.losses,
+        points_for: teamStats.points_for,
+        points_against: teamStats.points_against,
+        points_differential: teamStats.point_differential,
+        group_points: teamStats.total_points
       };
     });
 

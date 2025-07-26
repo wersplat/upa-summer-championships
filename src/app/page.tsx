@@ -183,12 +183,31 @@ interface TeamWithStats extends Omit<TeamWithRegion, 'elo_rating'> {
 
 async function getTopTeams(): Promise<TeamWithStats[]> {
   try {
-    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2024
+    const eventId = '0d974c94-7531-41e9-833f-d1468690d72d'; // UPA Summer Championship 2025
     
     // Get team standings with group points from the view for the specific event
     const { data: standings, error: standingsError } = await supabase
       .from('group_points_standings')
-      .select('*')
+      .select(`
+        group_id,
+        group_name,
+        event_id,
+        event_name,
+        team_id,
+        team_name,
+        position,
+        matches_played,
+        wins,
+        losses,
+        total_points,
+        wins_by_20_plus,
+        regular_wins,
+        forfeits,
+        points_for,
+        points_against,
+        point_differential,
+        updated_at
+      `)
       .eq('event_id', eventId)
       .order('total_points', { ascending: false })
       .order('point_differential', { ascending: false })
@@ -248,6 +267,11 @@ async function getTopTeams(): Promise<TeamWithStats[]> {
           id: captainPlayer.id,
           gamertag: captainPlayer.gamertag
         } : null,
+        // Map the stats from the view
+        wins: standing?.wins || 0,
+        losses: standing?.losses || 0,
+        points_differential: standing?.point_differential || 0,
+        group_points: standing?.total_points || 0,
         stats: {
           wins: standing?.wins || 0,
           losses: standing?.losses || 0,
