@@ -176,7 +176,7 @@ async function getAwardsData() {
           console.log(`Processing stat entry for ${player.gamertag}:`, {
             points: stat.points,
             assists: stat.assists,
-            fg: stat.fgm && stat.fga ? (stat.fgm / stat.fga) * 100 : 0,
+            fg: stat.fgm && stat.fga ? (stat.fgm / stat.fga) : 0,
             raw_stat: stat
           });
           
@@ -188,11 +188,11 @@ async function getAwardsData() {
           
           // Calculate field goal percentage for this game
           if (stat.fga > 0) {
-            const gameFgPct = (stat.fgm / stat.fga) * 100;
+            const gameFgPct = stat.fgm / stat.fga;
             console.log(`Game FG% for ${player.gamertag}:`, {
               fgm: stat.fgm,
               fga: stat.fga,
-              fgPct: gameFgPct.toFixed(1) + '%',
+              fgPct: gameFgPct.toFixed(3),
               gameId: stat.match_id
             });
             aggregatedStats.field_goal_percentage += gameFgPct;
@@ -200,7 +200,7 @@ async function getAwardsData() {
           
           // Calculate three point percentage for this game
           if (stat.three_points_attempted > 0) {
-            aggregatedStats.three_point_percentage += (stat.three_points_made / stat.three_points_attempted) * 100;
+            aggregatedStats.three_point_percentage += (stat.three_points_made / stat.three_points_attempted);
           }
           
           // Calculate overall rating (example formula, adjust as needed)
