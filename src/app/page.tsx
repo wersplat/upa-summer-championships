@@ -537,14 +537,14 @@ export default async function Home() {
                 textAlign="center" 
                 sx={{ fontWeight: 'bold', mb: 3 }}
               >
-                WINNERS SEMI-FINALS - BEST OF 3
+                LOWER BRACKET FINALS - BEST OF 3
               </Typography>
               
               <Grid container spacing={3}>
                 {/* Team A */}
                 <Grid item xs={12} md={5}>
                   <MatchTeamCard 
-                    teamId="2751b21c-e675-4129-a769-339db3518026" 
+                    teamId="2011b580-616e-4919-aa44-f001c85c4e4f" 
                     isHome={true}
                   />
                 </Grid>
@@ -583,18 +583,18 @@ export default async function Home() {
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mt: 1 }}>
                   <Chip 
-                    label="Game 1 - 5:00 PM EST" 
+                    label="Game 1 - 7:15 PM EST" 
                     color="primary"
                     variant="filled"
                     sx={{ fontWeight: 600, minWidth: 180 }}
                   />
                   <Chip 
-                    label="Game 2 - 5:30 PM EST" 
+                    label="Game 2 - 7:45 PM EST" 
                     variant="outlined"
                     sx={{ fontWeight: 600, minWidth: 180 }}
                   />
                   <Chip 
-                    label="Game 3 (If Needed) - 6:00 PM EST" 
+                    label="Game 3 (If Needed) - 8:15 PM EST" 
                     variant="outlined"
                     sx={{ fontWeight: 600, minWidth: 180, fontStyle: 'italic', borderStyle: 'dashed' }}
                   />
