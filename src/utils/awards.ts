@@ -223,15 +223,32 @@ export async function getAwardsData() {
       .slice(0, 5);
 
     // Calculate DMVP candidates (top 5 by defensive rating)
-    const dmvpCandidates = processedPlayers
-      .map((player) => ({
+    const dmvpCandidates = await Promise.all(processedPlayers.map(async (player) => {
+      // Get team's defensive stats (opponent FG%)
+      let opponentFgPct = 50; // Default to 50% if no data
+      try {
+        const teamStats = await getTeamDefensiveStats(player.team_id);
+        opponentFgPct = teamStats.opponentFgPct;
+      } catch (error) {
+        console.error(`Error getting defensive stats for team ${player.team_id}:`, error);
+      }
+      
+      // Calculate defensive rating with new weights
+      // Steals: 40%, Blocks: 30%, Rebounds: 10%, Opponent FG%: 20% (inverted - lower is better)
+      const fgPctComponent = (100 - opponentFgPct) * 0.2; // Invert so lower opponent % is better
+      
+      return {
         ...player,
         defensive_rating: (player.steals_per_game * 0.4) + 
                          (player.blocks_per_game * 0.3) + 
-                         (player.rebounds_per_game * 0.3)
-      }))
-      .sort((a, b) => b.defensive_rating - a.defensive_rating)
-      .slice(0, 5);
+                         (player.rebounds_per_game * 0.1) +
+                         fgPctComponent
+      };
+    }));
+
+    // Sort and get top 5
+    dmvpCandidates.sort((a, b) => b.defensive_rating - a.defensive_rating);
+    const topDmvpCandidates = dmvpCandidates.slice(0, 5);
 
     // Calculate Rookie candidates (top 5 rookies by overall performance)
     const rookieCandidates = processedPlayers
@@ -250,16 +267,16 @@ export async function getAwardsData() {
     console.log('Successfully processed awards data', {
       totalPlayers: processedPlayers.length,
       omvpCandidates: omvpCandidates.length,
-      dmvpCandidates: dmvpCandidates.length,
+      dmvpCandidates: topDmvpCandidates.length,
       rookieCandidates: rookieCandidates.length,
       sampleOmvp: omvpCandidates[0],
-      sampleDmvp: dmvpCandidates[0],
+      sampleDmvp: topDmvpCandidates[0],
       sampleRookie: rookieCandidates[0]
     });
     
     return {
       omvpCandidates,
-      dmvpCandidates,
+      dmvpCandidates: topDmvpCandidates,
       rookieCandidates
     };
   } catch (error) {
@@ -270,5 +287,63 @@ export async function getAwardsData() {
       dmvpCandidates: [],
       rookieCandidates: []
     };
+  }
+}
+
+// Helper function to get team defensive stats
+async function getTeamDefensiveStats(teamId: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  );
+
+  try {
+    // Get all matches where this team played
+    const { data: matches, error: matchesError } = await supabase
+      .from('matches')
+      .select('id, team_a_id, team_b_id')
+      .or(`team_a_id.eq.${teamId},team_b_id.eq.${teamId}`);
+
+    if (matchesError || !matches || matches.length === 0) {
+      console.log(`No matches found for team ${teamId}`);
+      return { opponentFgPct: 45 }; // Default to 45% if no matches found
+    }
+
+    // Get all match IDs where this team played
+    const matchIds = matches.map(match => match.id);
+    
+    // Get all team_match_stats for these matches, excluding the current team's stats
+    const { data: opponentStats, error: statsError } = await supabase
+      .from('team_match_stats')
+      .select('field_goals_made, field_goals_attempted')
+      .in('match_id', matchIds)
+      .neq('team_id', teamId);
+
+    if (statsError || !opponentStats || opponentStats.length === 0) {
+      console.log(`No opponent stats found for team ${teamId}`);
+      return { opponentFgPct: 45 }; // Default to 45% if no stats found
+    }
+
+    // Calculate total field goals made and attempted by opponents
+    let totalFgMade = 0;
+    let totalFgAttempted = 0;
+
+    opponentStats.forEach(stat => {
+      totalFgMade += Number(stat.field_goals_made) || 0;
+      totalFgAttempted += Number(stat.field_goals_attempted) || 0;
+    });
+
+    // Calculate opponent field goal percentage (0-100)
+    const opponentFgPct = totalFgAttempted > 0 
+      ? Math.round((totalFgMade / totalFgAttempted) * 100 * 10) / 10 // Round to 1 decimal place
+      : 45; // Default if no attempts
+
+    console.log(`Team ${teamId} - Opponent FG%: ${opponentFgPct}% (${totalFgMade}/${totalFgAttempted})`);
+    
+    return { opponentFgPct };
+  } catch (error) {
+    console.error(`Error calculating defensive stats for team ${teamId}:`, error);
+    return { opponentFgPct: 45 }; // Default on error
   }
 }

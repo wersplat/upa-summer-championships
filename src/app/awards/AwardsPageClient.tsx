@@ -80,7 +80,7 @@ export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rooki
               <strong>Offensive MVP:</strong> 40% Points per game, 30% Assists per game, 20% Field Goal %, 10% 3PT %
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-              <strong>Defensive MVP:</strong> 40% Steals per game, 30% Blocks per game, 20% Rebounds, 10% Field Goal %
+              <strong>Defensive MVP:</strong> 40% Steals per game, 30% Blocks per game, 10% Rebounds, 20% Opponent FG% (inverted - lower is better)
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
               <strong>Rookie of Tournament:</strong> 35% Overall Rating, 30% Points per game, 20% Field Goal %, 15% Games Played (min. 3)
