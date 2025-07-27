@@ -6,8 +6,7 @@ import {
   Container,
   Typography,
   Grid,
-  Paper,
-  alpha,
+  Link,
   useTheme
 } from '@mui/material';
 import {
@@ -17,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import { PlayerStats } from './page';
 import PlayerCard from '@/components/PlayerCard';
+import StandardCard from '@/components/StandardCard';
 
 interface AwardsPageClientProps {
   omvpCandidates: PlayerStats[];
@@ -26,36 +26,6 @@ interface AwardsPageClientProps {
 
 export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rookieCandidates }: AwardsPageClientProps) {
   const theme = useTheme();
-
-  // Map player stats to PlayerCard props format
-  const mapPlayerToCardProps = (player: PlayerStats, category: 'omvp' | 'dmvp' | 'rookie') => {
-    const baseProps = {
-      id: player.id,
-      gamertag: player.gamertag,
-      position: player.position || 'Unknown',
-      teamName: player.team_name,
-      rating: category === 'omvp' ? player.offensive_rating : 
-              category === 'dmvp' ? player.defensive_rating : 
-              player.rookie_rating,
-      isHighlighted: false,
-      rank: 0, // Will be set when mapping
-      stats: {
-        field_goal_percentage: player.field_goal_percentage * 100, // Convert to percentage
-        points_per_game: player.points_per_game,
-        assists_per_game: player.assists_per_game,
-        steals_per_game: player.steals_per_game,
-        blocks_per_game: player.blocks_per_game,
-        rebounds_per_game: player.rebounds_per_game,
-        games_played: player.games_played
-      }
-    };
-
-    // Set rating color based on category
-    const ratingColor = category === 'omvp' ? 'error' : 
-                       category === 'dmvp' ? 'info' : 'warning';
-
-    return { ...baseProps, ratingColor };
-  };
 
   return (
     <Box sx={{ minHeight: '100vh', py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
@@ -79,7 +49,7 @@ export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rooki
           <Typography
             variant="h5"
             sx={{
-              color: alpha(theme.palette.common.white, 0.8),
+              color: 'rgba(255, 255, 255, 0.7)',
               mb: 2,
               textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
             }}
@@ -90,149 +60,106 @@ export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rooki
             variant="caption"
             sx={{
               display: 'block',
-              color: alpha(theme.palette.common.white, 0.6),
-              fontStyle: 'italic'
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontStyle: 'italic',
+              mb: 3
             }}
           >
             * Players must have played in at least 3 games to be eligible for awards
           </Typography>
         </Box>
 
-        {/* Awards Grid */}
         <Grid container spacing={3}>
           {/* Offensive MVP */}
           <Grid item xs={12} md={4}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                height: '100%',
-                bgcolor: alpha(theme.palette.background.paper, 0.1),
-                backdropFilter: 'blur(10px)',
-                border: '1px solid',
-                borderColor: alpha(theme.palette.divider, 0.2),
-                borderRadius: 2,
-              }}
+            <StandardCard
+              title="Offensive MVP"
+              icon={<Whatshot color="error" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Whatshot color="error" sx={{ mr: 2, fontSize: 32 }} />
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
-                    Offensive MVP
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: alpha(theme.palette.common.white, 0.7) }}>
-                    Top offensive performers
-                  </Typography>
-                </Box>
-              </Box>
-              
-              <Box sx={{ '& > *:not(:last-child)': { mb: 1 } }}>
-                {omvpCandidates.map((player, index) => (
-                  <PlayerCard
-                    key={player.id}
-                    {...mapPlayerToCardProps(player, 'omvp')}
-                    rank={index + 1}
-                    isHighlighted={index === 0}
-                    ratingLabel={`${player.offensive_rating?.toFixed(1)} OVR`}
-                  />
-                ))}
-                {omvpCandidates.length === 0 && (
-                  <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-                    No candidates available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
+              {omvpCandidates.map((player, index) => (
+                <PlayerCard
+                  key={player.id}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.offensive_rating}
+                  ratingColor={index === 0 ? 'primary' : 'default'}
+                  avatarColor="primary.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    points_per_game: player.points_per_game,
+                    assists_per_game: player.assists_per_game
+                  }}
+                />
+              ))}
+            </StandardCard>
           </Grid>
 
           {/* Defensive MVP */}
           <Grid item xs={12} md={4}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                height: '100%',
-                bgcolor: alpha(theme.palette.background.paper, 0.1),
-                backdropFilter: 'blur(10px)',
-                border: '1px solid',
-                borderColor: alpha(theme.palette.divider, 0.2),
-                borderRadius: 2,
-              }}
+            <StandardCard
+              title="Defensive MVP"
+              icon={<Shield color="info" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Shield color="info" sx={{ mr: 2, fontSize: 32 }} />
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
-                    Defensive MVP
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: alpha(theme.palette.common.white, 0.7) }}>
-                    Top defensive performers
-                  </Typography>
-                </Box>
-              </Box>
-              
-              <Box sx={{ '& > *:not(:last-child)': { mb: 1 } }}>
-                {dmvpCandidates.map((player, index) => (
-                  <PlayerCard
-                    key={player.id}
-                    {...mapPlayerToCardProps(player, 'dmvp')}
-                    rank={index + 1}
-                    isHighlighted={index === 0}
-                    ratingLabel={`${player.defensive_rating?.toFixed(1)} OVR`}
-                  />
-                ))}
-                {dmvpCandidates.length === 0 && (
-                  <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-                    No candidates available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
+              {dmvpCandidates.map((player, index) => (
+                <PlayerCard
+                  key={`def-${player.id}`}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.defensive_rating}
+                  ratingColor={index === 0 ? 'info' : 'default'}
+                  avatarColor="info.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    steals_per_game: player.steals_per_game,
+                    blocks_per_game: player.blocks_per_game,
+                    rebounds_per_game: player.rebounds_per_game
+                  }}
+                />
+              ))}
+            </StandardCard>
           </Grid>
 
           {/* Rookie of Tournament */}
           <Grid item xs={12} md={4}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                height: '100%',
-                bgcolor: alpha(theme.palette.background.paper, 0.1),
-                backdropFilter: 'blur(10px)',
-                border: '1px solid',
-                borderColor: alpha(theme.palette.divider, 0.2),
-                borderRadius: 2,
-              }}
+            <StandardCard
+              title="Rookie of Tournament"
+              icon={<Star color="warning" sx={{ mr: 1 }} />}
+              variant="default"
+              elevation={1}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Star color="warning" sx={{ mr: 2, fontSize: 32 }} />
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, color: 'white' }}>
-                    Rookie of Tournament
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: alpha(theme.palette.common.white, 0.7) }}>
-                    Top first-year players
-                  </Typography>
-                </Box>
-              </Box>
-              
-              <Box sx={{ '& > *:not(:last-child)': { mb: 1 } }}>
-                {rookieCandidates.map((player, index) => (
-                  <PlayerCard
-                    key={player.id}
-                    {...mapPlayerToCardProps(player, 'rookie')}
-                    rank={index + 1}
-                    isHighlighted={index === 0}
-                    ratingLabel={`${player.rookie_rating?.toFixed(1)} OVR`}
-                  />
-                ))}
-                {rookieCandidates.length === 0 && (
-                  <Typography variant="body2" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-                    No candidates available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
+              {rookieCandidates.map((player, index) => (
+                <PlayerCard
+                  key={`rookie-${player.id}`}
+                  id={player.id}
+                  gamertag={player.gamertag}
+                  position={player.position}
+                  teamName={player.team_name}
+                  rating={player.rookie_rating}
+                  ratingColor={index === 0 ? 'warning' : 'default'}
+                  avatarColor="warning.main"
+                  isHighlighted={index === 0}
+                  rank={index + 1}
+                  stats={{
+                    field_goal_percentage: player.field_goal_percentage,
+                    points_per_game: player.points_per_game,
+                    rebounds_per_game: player.rebounds_per_game,
+                    assists_per_game: player.assists_per_game
+                  }}
+                />
+              ))}
+            </StandardCard>
           </Grid>
         </Grid>
       </Container>

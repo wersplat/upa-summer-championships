@@ -175,7 +175,7 @@ export async function getAwardsData() {
           aggregatedStats.steals_per_game = aggregatedStats.steals_per_game / gameCount;
           aggregatedStats.blocks_per_game = aggregatedStats.blocks_per_game / gameCount;
           aggregatedStats.rebounds_per_game = aggregatedStats.rebounds_per_game / gameCount;
-          aggregatedStats.field_goal_percentage = aggregatedStats.field_goal_percentage / gameCount;
+          aggregatedStats.field_goal_percentage = aggregatedStats.field_goal_percentage / gameCount; 
           aggregatedStats.three_point_percentage = aggregatedStats.three_point_percentage / gameCount;
           aggregatedStats.overall_rating = aggregatedStats.overall_rating / gameCount;
         }
