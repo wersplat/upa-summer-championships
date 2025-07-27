@@ -310,22 +310,89 @@ function PlayerProfile({ player }: PlayerProfileProps) {
 
         {/* Statistics Tab */}
         <TabPanel value={tabValue} index={1}>
-          <Typography variant="h6" gutterBottom>
-            Detailed Statistics
-          </Typography>
-          <Typography color="text.secondary">
-            Detailed statistics and advanced metrics coming soon.
-          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardHeader title="Shooting Stats" />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableBody>
+                        {renderStatRow('Field Goals', `${player.stats.field_goal_percentage.toFixed(1)}%`)}
+                        {renderStatRow('3-Pointers', player.stats.three_point_percentage > 0 ? `${player.stats.three_point_percentage.toFixed(1)}%` : 'N/A')}
+                        {renderStatRow('Free Throws', player.stats.free_throw_percentage > 0 ? `${player.stats.free_throw_percentage.toFixed(1)}%` : 'N/A')}
+                        {renderStatRow('Effective FG%', (player.stats.field_goal_percentage + (0.5 * (player.stats.three_point_percentage || 0))).toFixed(1) + '%')}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardHeader title="Advanced Stats" />
+                <CardContent>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableBody>
+                        {renderStatRow('Efficiency', (player.stats.points_per_game + player.stats.rebounds_per_game + player.stats.assists_per_game + player.stats.steals_per_game + player.stats.blocks_per_game - player.stats.turnovers_per_game).toFixed(1))}
+                        {renderStatRow('Assist/TO Ratio', player.stats.turnovers_per_game > 0 ? (player.stats.assists_per_game / player.stats.turnovers_per_game).toFixed(2) : 'N/A')}
+                        {renderStatRow('Steals + Blocks', (player.stats.steals_per_game + player.stats.blocks_per_game).toFixed(1))}
+                        {renderStatRow('Double-Doubles', '0')} {/* This would need to be calculated from match history */}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </TabPanel>
 
         {/* Game Log Tab */}
         <TabPanel value={tabValue} index={2}>
-          <Typography variant="h6" gutterBottom>
-            Game Log
-          </Typography>
-          <Typography color="text.secondary">
-            Game log and performance history coming soon.
-          </Typography>
+          <Card>
+            <CardHeader title="Game Log" />
+            <CardContent>
+              {player.match_history && player.match_history.length > 0 ? (
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Event</TableCell>
+                        <TableCell>Team</TableCell>
+                        <TableCell>PTS</TableCell>
+                        <TableCell>REB</TableCell>
+                        <TableCell>AST</TableCell>
+                        <TableCell>STL</TableCell>
+                        <TableCell>BLK</TableCell>
+                        <TableCell>+/-</TableCell>
+                        <TableCell>MVP</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {player.match_history.map((game, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{new Date(game.played_at).toLocaleDateString()}</TableCell>
+                          <TableCell>{game.event_name}</TableCell>
+                          <TableCell>{game.team_name}</TableCell>
+                          <TableCell>{game.points}</TableCell>
+                          <TableCell>{game.rebounds}</TableCell>
+                          <TableCell>{game.assists}</TableCell>
+                          <TableCell>{game.steals}</TableCell>
+                          <TableCell>{game.blocks}</TableCell>
+                          <TableCell>{game.performance_score > 0 ? `+${game.performance_score}` : game.performance_score}</TableCell>
+                          <TableCell>{game.is_mvp ? '⭐' : ''}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography color="text.secondary">No game data available</Typography>
+              )}
+            </CardContent>
+          </Card>
         </TabPanel>
 
         {/* Awards Tab */}
