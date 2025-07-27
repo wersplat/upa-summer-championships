@@ -15,7 +15,7 @@ export default function BracketPage() {
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Box
           component="img"
-          src="/UPA-Summer-Championships.png"
+          src="/UPA-Summer-Championship.png"
           alt="UPA Summer Championship"
           sx={{
             height: 80,

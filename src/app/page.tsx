@@ -383,7 +383,7 @@ export default async function Home() {
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Box 
           component="img"
-          src="/UPA-Summer-Championships.png"
+          src="/UPA-Summer-Championship.png"
           alt="UPA Summer Championship"
           sx={{
             height: { xs: 120, sm: 160, md: 200 },

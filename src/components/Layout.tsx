@@ -31,6 +31,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { text: 'Bracket', href: '/bracket' },
     { text: 'Teams', href: '/teams' },
     { text: 'Players', href: '/players' },
+    { text: 'Draft Pool', href: '/draft-pool' },
+    { text: 'Game Recaps', href: '/recap' },
     { text: 'Awards', href: '/awards' },
     { text: 'FAQ', href: '/faq' },
   ];
@@ -81,7 +83,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Box component={Link} href="/" sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
             <Box
               component="img"
-              src="/UPA-Summer-Championships.png"
+              src="/UPA-Summer-Championship.png"
               alt="UPA Summer Championship"
               sx={{
                 height: 40,
@@ -144,7 +146,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <Box
               component="img"
-              src="/UPA-Summer-Championships.png"
+              src="/UPA-Summer-Championship.png"
               alt="UPA Summer Championship"
               sx={{
                 height: 40,

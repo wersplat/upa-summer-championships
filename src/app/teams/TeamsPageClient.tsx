@@ -159,7 +159,7 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
             }}
           >
             <Image
-              src="/UPA-Summer-Championships.png"
+              src="/UPA-Summer-Championship.png"
               alt="UPA Summer Championship"
               width={300}
               height={120}

@@ -38,8 +38,8 @@ A modern web application for tracking teams, players, and matches in the UPA Sum
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/upa-summer-championships.git
-   cd upa-summer-championships
+   git clone https://github.com/your-username/upa-summer-Championship.git
+   cd upa-summer-Championship
    ```
 
 2. **Install dependencies**
@@ -192,7 +192,7 @@ The application features a comprehensive awards system:
 
 ### Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fupa-summer-championships&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY&envDescription=Supabase%20credentials%20are%20required%20to%20connect%20to%20your%20database.&envLink=https%3A%2F%2Fsupabase.com%2Fdocs%2Fguides%2Fgetting-started%2Fquickstarts%2Fnextjs)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fupa-summer-Championship&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY&envDescription=Supabase%20credentials%20are%20required%20to%20connect%20to%20your%20database.&envLink=https%3A%2F%2Fsupabase.com%2Fdocs%2Fguides%2Fgetting-started%2Fquickstarts%2Fnextjs)
 
 1. Fork this repository
 2. Create a new project on Vercel
@@ -238,4 +238,4 @@ This project is licensed under the MIT License - see [MIT License](https://opens
 
 Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - <email@example.com>
 
-Project Link: [GitHub Repository](https://github.com/your-username/upa-summer-championships)
+Project Link: [GitHub Repository](https://github.com/your-username/upa-summer-Championship)
