@@ -14,6 +14,7 @@ export interface PlayerAwardStats {
   steals_per_game: number;
   blocks_per_game: number;
   rebounds_per_game: number;
+  fouls_per_game: number;
   games_played: number;
   is_rookie: boolean;
   overall_rating: number;
@@ -120,6 +121,7 @@ export async function getAwardsData() {
           steals_per_game: 0,
           blocks_per_game: 0,
           rebounds_per_game: 0,
+          fouls_per_game: 0,
           games_played: statsList.length, // Each stat entry represents one game
           is_rookie: player.is_rookie || false, // Get from player instead of stats
           overall_rating: 0
@@ -139,6 +141,7 @@ export async function getAwardsData() {
           aggregatedStats.steals_per_game += Number(stat.steals) || 0;
           aggregatedStats.blocks_per_game += Number(stat.blocks) || 0;
           aggregatedStats.rebounds_per_game += Number(stat.rebounds) || 0;
+          aggregatedStats.fouls_per_game += Number(stat.fouls) || 0;
           
           // Calculate field goal percentage for this game
           if (stat.fga > 0) {
@@ -176,6 +179,7 @@ export async function getAwardsData() {
           aggregatedStats.steals_per_game = aggregatedStats.steals_per_game / gameCount;
           aggregatedStats.blocks_per_game = aggregatedStats.blocks_per_game / gameCount;
           aggregatedStats.rebounds_per_game = aggregatedStats.rebounds_per_game / gameCount;
+          aggregatedStats.fouls_per_game = aggregatedStats.fouls_per_game / gameCount;
           aggregatedStats.field_goal_percentage = aggregatedStats.field_goal_percentage / gameCount; 
           aggregatedStats.three_point_percentage = aggregatedStats.three_point_percentage / gameCount;
           aggregatedStats.overall_rating = aggregatedStats.overall_rating / gameCount;
@@ -223,28 +227,19 @@ export async function getAwardsData() {
       .slice(0, 5);
 
     // Calculate DMVP candidates (top 5 by defensive rating)
-    const dmvpCandidates = await Promise.all(processedPlayers.map(async (player) => {
-      // Get team's defensive stats (opponent FG%)
-      let opponentFgPct = 50; // Default to 50% if no data
-      try {
-        const teamStats = await getTeamDefensiveStats(player.team_id);
-        opponentFgPct = teamStats.opponentFgPct;
-      } catch (error) {
-        console.error(`Error getting defensive stats for team ${player.team_id}:`, error);
-      }
-      
-      // Calculate defensive rating with new weights
-      // Steals: 40%, Blocks: 30%, Rebounds: 10%, Opponent FG%: 20% (inverted - lower is better)
-      const fgPctComponent = (100 - opponentFgPct) * 0.2; // Invert so lower opponent % is better
+    const dmvpCandidates = processedPlayers.map((player) => {
+      // New defensive rating formula: (2 * steals) + (2 * blocks) + rebounds - fouls
+      const defensive_rating = 
+        (player.steals_per_game * 2) + 
+        (player.blocks_per_game * 2) + 
+        player.rebounds_per_game - 
+        player.fouls_per_game;
       
       return {
         ...player,
-        defensive_rating: (player.steals_per_game * 0.4) + 
-                         (player.blocks_per_game * 0.3) + 
-                         (player.rebounds_per_game * 0.1) +
-                         fgPctComponent
+        defensive_rating
       };
-    }));
+    });
 
     // Sort and get top 5
     dmvpCandidates.sort((a, b) => b.defensive_rating - a.defensive_rating);
