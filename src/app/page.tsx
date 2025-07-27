@@ -6,7 +6,6 @@ import { getAwardsData } from '@/utils/awards';
 import StandardCard from '@/components/StandardCard';
 import PlayerCard from '@/components/PlayerCard';
 
-
 export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
 import {
@@ -364,6 +363,112 @@ async function getTopPlayers(): Promise<PlayerWithRoster[]> {
   }
 }
 
+async function getTeamWithRoster(teamId: string) {
+  const { data: team, error } = await supabase
+    .from('teams')
+    .select(`
+      id,
+      name,
+      logo_url,
+      team_rosters!inner(
+        id,
+        is_captain,
+        event_id,
+        players (
+          id,
+          gamertag,
+          position
+        )
+      )
+    `)
+    .eq('id', teamId)
+    .eq('team_rosters.event_id', '0d974c94-7531-41e9-833f-d1468690d72d')
+    .single();
+
+  if (error) {
+    console.error(`Error fetching team ${teamId}:`, error);
+    return null;
+  }
+  
+  // Filter team_rosters to only include those from the specified event
+  if (team && team.team_rosters) {
+    team.team_rosters = team.team_rosters.filter(
+      (roster: any) => roster.event_id === '0d974c94-7531-41e9-833f-d1468690d72d'
+    );
+  }
+  
+  return team;
+}
+
+async function MatchTeamCard({ teamId, isHome }: { teamId: string, isHome: boolean }) {
+  const team = await getTeamWithRoster(teamId);
+  
+  if (!team) {
+    return (
+      <Box sx={{ textAlign: 'center', p: 2 }}>
+        <Typography color="error">Error loading team data</Typography>
+      </Box>
+    );
+  }
+
+  const captain = team.team_rosters?.find(tr => tr.is_captain)?.players;
+  const players = team.team_rosters?.map(tr => tr.players).filter(Boolean) || [];
+
+  return (
+    <Box sx={{ textAlign: 'center' }}>
+      <Avatar 
+        src={team.logo_url || undefined} 
+        sx={{ 
+          width: 100, 
+          height: 100, 
+          mx: 'auto',
+          mb: 2,
+          border: '2px solid',
+          borderColor: 'primary.main'
+        }}
+      />
+      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+        {team.name}
+      </Typography>
+      {captain && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Captain: {captain.gamertag}
+        </Typography>
+      )}
+      
+      <Box sx={{ mt: 2, textAlign: 'left' }}>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          ROSTER:
+        </Typography>
+        {players.length > 0 ? (
+          <Box component="ul" sx={{ pl: 2, m: 0 }}>
+            {players.map((player: any) => (
+              <Box component="li" key={player.id} sx={{ mb: 0.5 }}>
+                <Typography variant="body2">
+                  {player.gamertag} 
+                  {player.position && <span style={{ color: 'text.secondary' }}> • {player.position}</span>}
+                  {captain?.id === player.id && (
+                    <Chip 
+                      label="C" 
+                      size="small" 
+                      color="primary" 
+                      sx={{ ml: 1, height: 18, '& .MuiChip-label': { px: 0.5 } }} 
+                    />
+                  )}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No roster information available
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 export default async function Home() {
   const [recent, upcoming, topTeams, , awardsData] = await Promise.all([
     getRecentMatches(),
@@ -374,8 +479,6 @@ export default async function Home() {
   ]);
 
   const { omvpCandidates, dmvpCandidates, rookieCandidates } = awardsData;
-
-
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3, minHeight: '100vh' }}>
@@ -417,292 +520,90 @@ export default async function Home() {
         </Typography>
       </Box>
 
-      {/* Tournament Standings Explanation Section */}
-      <Paper 
-        sx={{ 
-          p: 3, 
-          mb: 4, 
-          bgcolor: 'background.paper',
-          border: '1px solid',
-          borderColor: 'divider'
-        }}
-        role="region"
-        aria-labelledby="standings-title"
-      >
-        <Box sx={{ textAlign: 'center', mb: 2 }}>
-          <Typography 
-            id="standings-title"
-            variant="h5" 
-            component="h2" 
-            sx={{ 
-              fontWeight: 'bold', 
-              color: 'text.primary',
-              mb: 1
-            }}
-          >
-            Tournament Standings
-          </Typography>
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: 'text.secondary'
-            }}
-          >
-            How teams are ranked in the championship
-          </Typography>
-        </Box>
-        
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={7}>
-            <Box component="div" sx={{ mb: 1.5, color: 'text.primary' }}>
-              <Box component="ul" sx={{ pl: 2, mb: 2, mt: 0 }}>
-                <li><strong>5 points</strong> — Win by 20+ points</li>
-                <li><strong>3 points</strong> — Regular win (win by less than 20 points)</li>
-                <li><strong>1 point</strong> — Loss</li>
-                <li><strong>0 points</strong> — Forfeit</li>
-              </Box>
-              <Typography variant="body2" component="div">
-                Teams are ranked by <strong>total points</strong>, then by <strong>points differential</strong> (total points scored minus points allowed). 
-                In case of a tie in points, the team with the better point differential will be ranked higher.
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <Chip 
-                label="Points (5/3/1/0)" 
-                size="small" 
-                sx={{ 
-                  bgcolor: 'primary.main', 
-                  color: 'primary.contrastText',
-                  fontWeight: 500
-                }}
-              />
-              <Chip 
-                label="Point Differential" 
-                size="small" 
-                sx={{ 
-                  bgcolor: 'secondary.main', 
-                  color: 'secondary.contrastText',
-                  fontWeight: 500
-                }}
-              />
-              <Chip 
-                label="Head-to-Head" 
-                size="small" 
-                sx={{ 
-                  bgcolor: 'success.main', 
-                  color: 'success.contrastText',
-                  fontWeight: 500
-                }}
-              />
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} md={5}>
-            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Box 
-                sx={{ 
-                  textAlign: 'center',
-                  p: 1.5,
-                  minWidth: 90,
-                  bgcolor: 'success.dark',
-                  color: 'success.contrastText',
-                  borderRadius: 1,
-                  border: '2px solid',
-                  borderColor: 'success.main'
-                }}
-                role="img"
-                aria-label="Wins statistic"
-              >
-                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  POINTS
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  5/3/1/0 System
-                </Typography>
-              </Box>
-              
-              <Box 
-                sx={{ 
-                  textAlign: 'center',
-                  p: 1.5,
-                  minWidth: 90,
-                  bgcolor: 'warning.dark',
-                  color: 'warning.contrastText',
-                  borderRadius: 1,
-                  border: '2px solid',
-                  borderColor: 'warning.main'
-                }}
-                role="img"
-                aria-label="Losses statistic"
-              >
-                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  WIN %
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Win Percentage
-                </Typography>
-              </Box>
-              
-              <Box 
-                sx={{ 
-                  textAlign: 'center',
-                  p: 1.5,
-                  minWidth: 90,
-                  bgcolor: 'info.dark',
-                  color: 'info.contrastText',
-                  borderRadius: 1,
-                  border: '2px solid',
-                  borderColor: 'info.main'
-                }}
-                role="img"
-                aria-label="Points differential statistic"
-              >
-                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
-                  +/- DIFF
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Tiebreaker
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Teams Section */}
+      {/* Championship Sunday Section */}
       <Paper sx={{ mb: 6, overflow: 'hidden' }}>
-        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50' }}>
           <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-            Top Teams
+            Championship Sunday
           </Typography>
-          <Button 
-            component={Link} 
-            href="/teams" 
-            variant="outlined" 
-            color="primary"
-            size="small"
-            sx={{ textTransform: 'none' }}
-          >
-            View All Teams
-          </Button>
         </Box>
         <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            {topTeams.map((team) => (
-              <Grid item xs={12} sm={6} md={4} key={team.id}>
-                <Card 
-                  component={Link} 
-                  href={`/teams/${team.id}`}
-                  sx={{ 
-                    height: '100%',
-                    textDecoration: 'none',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 4,
-                    },
-                    cursor: 'pointer'
-                  }}
+          <Card sx={{ border: '2px solid', borderColor: 'primary.main' }}>
+            <CardContent>
+              <Typography 
+                variant="h6" 
+                color="primary" 
+                gutterBottom 
+                textAlign="center" 
+                sx={{ fontWeight: 'bold', mb: 3 }}
               >
-                <CardHeader
-                  avatar={
-                    <Avatar 
-                      src={team.logo_url || undefined} 
-                      imgProps={{ referrerPolicy: 'no-referrer' }}
-                      sx={{ 
-                        width: 48, 
-                        height: 48,
-                        bgcolor: 'primary.main',
-                        color: 'primary.contrastText'
-                      }}
-                    >
-                      {team.logo_url ? '' : team.name.charAt(0)}
-                    </Avatar>
-                  }
-                  title={
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                      {team.name}
-                    </Typography>
-                  }
-                  subheader={
-                    team.captain ? (
-                      <Box 
-                        sx={{ 
-                          display: 'inline-flex', 
-                          alignItems: 'center',
-                          gap: 0.5,
-                          bgcolor: 'rgba(255, 193, 7, 0.1)',
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                          border: '1px solid rgba(255, 193, 7, 0.3)'
-                        }}
-                      >
-                        <Box component="span" sx={{ color: 'warning.main', fontSize: '0.8em', lineHeight: 1 }}>©</Box>
-                        <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
-                          {team.captain.gamertag}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.8rem' }}>
-                        No Captain
-                      </Typography>
-                    )
-                  }
-                />
-                <CardContent sx={{ pt: 0 }}>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                    {team.global_rank && (
-                      <Chip 
-                        label={`#${team.global_rank} Global`} 
-                        size="small" 
-                        color="primary" 
-                        variant="outlined"
-                      />
-                    )}
-                    {team.leaderboard_tier && (
-                      <Chip 
-                        label={team.leaderboard_tier} 
-                        size="small" 
-                        color="secondary"
-                      />
-                    )}
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Group Points
-                      </Typography>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                        {team.stats?.group_points || 0}
-                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.5, fontWeight: 400 }}>
-                          pts
-                        </Typography>
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Point Diff
-                      </Typography>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          fontWeight: 600, 
-                          color: (team.stats?.points_differential || 0) >= 0 ? 'success.main' : 'error.main' 
-                        }}
-                      >
-                        {(team.stats?.points_differential || 0) > 0 ? '+' : ''}{team.stats?.points_differential || 0}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    </Paper>
+                WINNERS SEMI-FINALS - BEST OF 3
+              </Typography>
+              
+              <Grid container spacing={3}>
+                {/* Team A */}
+                <Grid item xs={12} md={5}>
+                  <MatchTeamCard 
+                    teamId="2751b21c-e675-4129-a769-339db3518026" 
+                    isHome={true}
+                  />
+                </Grid>
+                
+                {/* VS Separator */}
+                <Grid item xs={12} md={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      color: 'primary.main',
+                      my: 2,
+                      transform: 'rotate(-90deg)',
+                      '@media (min-width: 900px)': {
+                        transform: 'none',
+                      }
+                    }}
+                  >
+                    VS
+                  </Typography>
+                </Grid>
+                
+                {/* Team B */}
+                <Grid item xs={12} md={5}>
+                  <MatchTeamCard 
+                    teamId="7648dc46-d8e0-4f34-8d70-c12187f7eaa8" 
+                    isHome={false}
+                  />
+                </Grid>
+              </Grid>
+              
+              {/* Game Schedule */}
+              <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  GAME SCHEDULE
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mt: 1 }}>
+                  <Chip 
+                    label="Game 1 - 5:00 PM EST" 
+                    color="primary"
+                    variant="filled"
+                    sx={{ fontWeight: 600, minWidth: 180 }}
+                  />
+                  <Chip 
+                    label="Game 2 - 5:30 PM EST" 
+                    variant="outlined"
+                    sx={{ fontWeight: 600, minWidth: 180 }}
+                  />
+                  <Chip 
+                    label="Game 3 (If Needed) - 6:00 PM EST" 
+                    variant="outlined"
+                    sx={{ fontWeight: 600, minWidth: 180, fontStyle: 'italic', borderStyle: 'dashed' }}
+                  />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      </Paper>
 
       {/* Tournament Awards Races Section */}
       <Box sx={{ mb: 6 }}>

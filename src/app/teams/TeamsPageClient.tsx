@@ -498,20 +498,34 @@ export default function TeamsPageClient({ teams: initialTeams }: { teams: TeamWi
                   <Divider sx={{ my: 1 }} />
                   
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center' }}>
-                    {team.leaderboard_tier && (
-                      <Chip 
-                        label={team.leaderboard_tier} 
-                        size="small" 
-                        color="info"
-                        variant="outlined"
-                      />
-                    )}
-                    {team.global_rank && (
-                      <Chip 
-                        label={`Global #${team.global_rank}`} 
-                        size="small" 
-                        color="primary"
-                        variant="outlined"
+                    {team.regions && team.regions.length > 0 ? (
+                      team.regions.map(region => (
+                        <Chip
+                          key={region.id}
+                          label={region.name}
+                          size="small"
+                          sx={{ 
+                            fontSize: '0.6rem',
+                            height: 20,
+                            '& .MuiChip-label': {
+                              px: 0.75,
+                              py: 0.25
+                            }
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <Chip
+                        label="No Region"
+                        size="small"
+                        sx={{ 
+                          fontSize: '0.6rem',
+                          height: 20,
+                          '& .MuiChip-label': {
+                            px: 0.75,
+                            py: 0.25
+                          }
+                        }}
                       />
                     )}
                   </Box>

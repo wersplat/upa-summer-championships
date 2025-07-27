@@ -101,6 +101,20 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       return null;
     }
 
+    // Get team performance summary
+    const { data: teamPerformance, error: performanceError } = await supabase
+      .from('team_performance_summary')
+      .select('*')
+      .eq('team_id', teamData.id)
+      .eq('event_id', eventId)
+      .single();
+
+    if (performanceError) {
+      console.error('Error fetching team performance summary:', performanceError);
+      // Continue with manual calculation as fallback
+      console.log('Falling back to manual W-L calculation');
+    }
+
     // Fetch team roster with player details for the specific event
     const { data: rosterData, error: rosterDataError } = await supabase
       .from('team_rosters')
@@ -153,34 +167,32 @@ async function getTeamData(id: string): Promise<TeamWithRoster | null> {
       team_b: Array.isArray(match.team_b) ? match.team_b[0] : match.team_b
     }));
 
-    // Calculate team stats
-    let wins = 0;
-    let losses = 0;
-    let pointsFor = 0;
-    let pointsAgainst = 0;
+    // Calculate team stats - only if we don't have performance summary data
+    let wins = teamPerformance?.matches_won || 0;
+    let losses = teamPerformance?.matches_lost || 0;
+    let pointsFor = teamPerformance?.points_for || 0;
+    let pointsAgainst = teamPerformance?.points_against || 0;
     
-    processedMatches?.forEach(match => {
-      const isTeamA = match.team_a_id === teamData.id;
-      const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
-      const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
-      
-      pointsFor += teamScore;
-      pointsAgainst += opponentScore;
-      
-      if (teamScore > opponentScore) {
-        wins++;
-      } else if (teamScore < opponentScore) {
-        losses++;
-      }
-      // If scores are equal, it's a tie - we don't increment wins or losses
-    });
+    // Only calculate manually if we don't have performance data
+    if (!teamPerformance) {
+      processedMatches?.forEach(match => {
+        const isTeamA = match.team_a_id === teamData.id;
+        const teamScore = isTeamA ? (match.score_a || 0) : (match.score_b || 0);
+        const opponentScore = isTeamA ? (match.score_b || 0) : (match.score_a || 0);
+        
+        pointsFor += teamScore;
+        pointsAgainst += opponentScore;
+        
+        if (teamScore > opponentScore) {
+          wins++;
+        } else if (teamScore < opponentScore) {
+          losses++;
+        }
+      });
+    }
     
     const gamesPlayed = wins + losses; // Only count games with a win or loss, excluding ties
     const pointsDifferential = pointsFor - pointsAgainst;
-
-
-
-
 
     return {
       ...teamData,
