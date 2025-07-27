@@ -57,6 +57,36 @@ export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rooki
             Track the race for tournament MVP awards
           </Typography>
           <Typography
+            variant="body2"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              mb: 2,
+              maxWidth: '800px',
+              mx: 'auto',
+              lineHeight: 1.6
+            }}
+          >
+            Awards are calculated based on player performance statistics with the following formulas:
+          </Typography>
+          <Box sx={{ 
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            p: 2, 
+            borderRadius: 1,
+            mb: 3,
+            maxWidth: '800px',
+            mx: 'auto'
+          }}>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
+              <strong>Offensive MVP:</strong> 40% Points per game, 30% Assists per game, 20% Field Goal %, 10% 3PT %
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
+              <strong>Defensive MVP:</strong> 40% Steals per game, 30% Blocks per game, 20% Rebounds, 10% Field Goal %
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+              <strong>Rookie of Tournament:</strong> 35% Overall Rating, 30% Points per game, 20% Field Goal %, 15% Games Played (min. 3)
+            </Typography>
+          </Box>
+          <Typography
             variant="caption"
             sx={{
               display: 'block',
