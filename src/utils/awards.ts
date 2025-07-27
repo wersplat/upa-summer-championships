@@ -49,13 +49,14 @@ export async function getAwardsData() {
     
     console.log('Supabase connection successful, fetching players...');
     
-    // Get all players with their team info
+    // Get all players with their team info and rookie status
     const { data: players, error: playersError, status, statusText } = await supabase
       .from('players')
       .select(`
         id,
         gamertag,
         position,
+        is_rookie,
         team_rosters!inner (
           team_id,
           teams!inner (
@@ -120,7 +121,7 @@ export async function getAwardsData() {
           blocks_per_game: 0,
           rebounds_per_game: 0,
           games_played: statsList.length, // Each stat entry represents one game
-          is_rookie: statsList.some(stat => stat.is_rookie),
+          is_rookie: player.is_rookie || false, // Get from player instead of stats
           overall_rating: 0
         };
 
@@ -234,7 +235,7 @@ export async function getAwardsData() {
 
     // Calculate Rookie candidates (top 5 rookies by overall performance)
     const rookieCandidates = processedPlayers
-      .filter((player) => player.is_rookie)
+      .filter((player) => player.is_rookie === true) // Explicitly check for true
       .map((player) => ({
         ...player,
         rookie_rating: (player.points_per_game * 0.3) + 
