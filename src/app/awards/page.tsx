@@ -252,9 +252,9 @@ async function getAwardsData() {
     
     console.log(`Processed ${playersWithStats.length} players with stats`);
     
-    // Filter out players with no games played
-    const processedPlayers = playersWithStats.filter(player => player.games_played > 0);
-    console.log(`Players with games played: ${processedPlayers.length}`);
+    // Filter out players with fewer than 3 games played
+    const processedPlayers = playersWithStats.filter(player => player.games_played >= 3);
+    console.log(`Players with 3+ games played: ${processedPlayers.length}`);
 
     // Calculate OMVP candidates (top 5 by offensive rating)
     const omvpCandidates = processedPlayers
