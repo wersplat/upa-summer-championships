@@ -536,8 +536,8 @@ const PlayersPageClient = ({ players, showFallbackMessage = false }: PlayersPage
                     <TableCell align="right">{renderStatCell(player.stats?.steals_per_game)}</TableCell>
                     <TableCell align="right">{renderStatCell(player.stats?.blocks_per_game)}</TableCell>
                     <TableCell align="right">{renderStatCell(player.stats?.field_goal_percentage, true)}</TableCell>
-                    <TableCell align="right">{renderStatCell(player.stats?.three_point_percentage, true)}</TableCell>
                     <TableCell align="right">{renderStatCell(player.stats?.free_throw_percentage, true)}</TableCell>
+                    <TableCell align="right">{renderStatCell(player.stats?.three_point_percentage, true)}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
