@@ -30,6 +30,7 @@ interface PlayerCardProps {
     steals_per_game?: number;
     blocks_per_game?: number;
     rebounds_per_game?: number;
+    opponent_fg_percentage?: number;
     [key: string]: number | undefined;
   };
   onClick?: () => void;
@@ -147,7 +148,9 @@ export default function PlayerCard({
             {stats.field_goal_percentage !== undefined && (
               <Chip 
                 size="small" 
-                label={`${stats.field_goal_percentage.toFixed(1)}% FG`}
+                label={stats.opponent_fg_percentage !== undefined 
+                  ? `${stats.field_goal_percentage.toFixed(1)}% Opp FG` 
+                  : `${stats.field_goal_percentage.toFixed(1)}% FG`}
                 variant="outlined"
                 sx={{ 
                   height: 'auto', 

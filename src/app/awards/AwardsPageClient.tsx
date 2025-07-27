@@ -154,7 +154,8 @@ export default function AwardsPageClient({ omvpCandidates, dmvpCandidates, rooki
                     field_goal_percentage: player.field_goal_percentage,
                     steals_per_game: player.steals_per_game,
                     blocks_per_game: player.blocks_per_game,
-                    rebounds_per_game: player.rebounds_per_game
+                    rebounds_per_game: player.rebounds_per_game,
+                    opponent_fg_percentage: player.opponent_fg_percentage
                   }}
                 />
               ))}

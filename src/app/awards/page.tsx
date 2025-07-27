@@ -29,6 +29,7 @@ export interface PlayerStats {
   offensive_rating?: number;
   defensive_rating?: number;
   rookie_rating?: number;
+  opponent_fg_percentage?: number;
 }
 
 export const metadata: Metadata = {
