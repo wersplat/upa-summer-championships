@@ -537,7 +537,7 @@ export default async function Home() {
                 textAlign="center" 
                 sx={{ fontWeight: 'bold', mb: 3 }}
               >
-                LOWER BRACKET FINALS - BEST OF 3
+                GRAND FINALS - BEST OF 3 (Breakout win will result in a Bracket Reset)
               </Typography>
               
               <Grid container spacing={3}>
@@ -570,7 +570,7 @@ export default async function Home() {
                 {/* Team B */}
                 <Grid item xs={12} md={5}>
                   <MatchTeamCard 
-                    teamId="7648dc46-d8e0-4f34-8d70-c12187f7eaa8" 
+                    teamId="fe0890c1-1303-40e6-a18c-dbcb4e251e01" 
                     isHome={false}
                   />
                 </Grid>
@@ -583,18 +583,18 @@ export default async function Home() {
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mt: 1 }}>
                   <Chip 
-                    label="Game 1 - 7:15 PM EST" 
+                    label="Game 1 - 8:45 PM EST" 
                     color="primary"
                     variant="filled"
                     sx={{ fontWeight: 600, minWidth: 180 }}
                   />
                   <Chip 
-                    label="Game 2 - 7:45 PM EST" 
+                    label="Game 2 - 9:15 PM EST" 
                     variant="outlined"
                     sx={{ fontWeight: 600, minWidth: 180 }}
                   />
                   <Chip 
-                    label="Game 3 (If Needed) - 8:15 PM EST" 
+                    label="Game 3 (If Needed) - 9:45 PM EST" 
                     variant="outlined"
                     sx={{ fontWeight: 600, minWidth: 180, fontStyle: 'italic', borderStyle: 'dashed' }}
                   />
