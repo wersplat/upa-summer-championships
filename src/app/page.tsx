@@ -570,7 +570,7 @@ export default async function Home() {
                 {/* Team B */}
                 <Grid item xs={12} md={5}>
                   <MatchTeamCard 
-                    teamId="fe0890c1-1303-40e6-a18c-dbcb4e251e01" 
+                    teamId="2751b21c-e675-4129-a769-339db3518026" 
                     isHome={false}
                   />
                 </Grid>
