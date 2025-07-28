@@ -520,90 +520,22 @@ export default async function Home() {
         </Typography>
       </Box>
 
-      {/* Championship Sunday Section */}
-      <Paper sx={{ mb: 6, overflow: 'hidden' }}>
-        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider', bgcolor: 'grey.50' }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-            Championship Sunday
-          </Typography>
-        </Box>
-        <Box sx={{ p: 3 }}>
-          <Card sx={{ border: '2px solid', borderColor: 'primary.main' }}>
-            <CardContent>
-              <Typography 
-                variant="h6" 
-                color="primary" 
-                gutterBottom 
-                textAlign="center" 
-                sx={{ fontWeight: 'bold', mb: 3 }}
-              >
-                GRAND FINALS - BEST OF 3 (Breakout win will result in a Bracket Reset)
-              </Typography>
-              
-              <Grid container spacing={3}>
-                {/* Team A */}
-                <Grid item xs={12} md={5}>
-                  <MatchTeamCard 
-                    teamId="2011b580-616e-4919-aa44-f001c85c4e4f" 
-                    isHome={true}
-                  />
-                </Grid>
-                
-                {/* VS Separator */}
-                <Grid item xs={12} md={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'primary.main',
-                      my: 2,
-                      transform: 'rotate(-90deg)',
-                      '@media (min-width: 900px)': {
-                        transform: 'none',
-                      }
-                    }}
-                  >
-                    VS
-                  </Typography>
-                </Grid>
-                
-                {/* Team B */}
-                <Grid item xs={12} md={5}>
-                  <MatchTeamCard 
-                    teamId="2751b21c-e675-4129-a769-339db3518026" 
-                    isHome={false}
-                  />
-                </Grid>
-              </Grid>
-              
-              {/* Game Schedule */}
-              <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  GAME SCHEDULE
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mt: 1 }}>
-                  <Chip 
-                    label="Game 1 - 8:45 PM EST" 
-                    color="primary"
-                    variant="filled"
-                    sx={{ fontWeight: 600, minWidth: 180 }}
-                  />
-                  <Chip 
-                    label="Game 2 - 9:15 PM EST" 
-                    variant="outlined"
-                    sx={{ fontWeight: 600, minWidth: 180 }}
-                  />
-                  <Chip 
-                    label="Game 3 (If Needed) - 9:45 PM EST" 
-                    variant="outlined"
-                    sx={{ fontWeight: 600, minWidth: 180, fontStyle: 'italic', borderStyle: 'dashed' }}
-                  />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-      </Paper>
+      {/* Championship Sunday Section - Replaced with Winners Image */}
+      <Box sx={{ mb: 6, textAlign: 'center' }}>
+        <Box 
+          component="img"
+          src="/SUMMER_CHAMPIONSHIP-WINNERS.png"
+          alt="Summer Championship Winners"
+          sx={{
+            maxWidth: '100%',
+            height: 'auto',
+            borderRadius: 1,
+            boxShadow: 3,
+            display: 'block',
+            margin: '0 auto'
+          }}
+        />
+      </Box>
 
       {/* Tournament Awards Races Section */}
       <Box sx={{ mb: 6 }}>
