@@ -51,4 +51,5 @@ export interface Game {
   mvp?: string;
   status: 'completed' | 'upcoming' | 'in_progress';
   tournamentStage?: string;
+  boxscore_url?: string | null;
 }

@@ -98,6 +98,7 @@ export type Match = {
   group_id?: string | null;
   round?: number | null;
   match_number?: number | null;
+  boxscore_url?: string | null;
   group?: EventGroup;
 };
 

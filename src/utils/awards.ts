@@ -230,10 +230,10 @@ export async function getAwardsData() {
     const dmvpCandidates = processedPlayers.map((player) => {
       // New defensive rating formula: (2 * steals) + (2 * blocks) + rebounds - fouls
       const defensive_rating = 
-        (player.steals_per_game * 2) + 
+        (player.steals_per_game * 3) + 
         (player.blocks_per_game * 2) + 
-        player.rebounds_per_game - 
-        player.fouls_per_game;
+        (player.rebounds_per_game * .5) - 
+        (player.fouls_per_game);
       
       return {
         ...player,

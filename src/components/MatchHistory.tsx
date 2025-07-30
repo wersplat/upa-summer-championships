@@ -5,6 +5,7 @@ import type { Match } from '@/utils/supabase';
 import { format, formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
 interface MatchWithDetails extends Omit<Match, 'score_a' | 'score_b' | 'played_at'> {
   team_a?: Team;
@@ -14,6 +15,7 @@ interface MatchWithDetails extends Omit<Match, 'score_a' | 'score_b' | 'played_a
   score_a?: number | null;
   score_b?: number | null;
   played_at?: string | null;
+  boxscore_url?: string | null;
 }
 
 interface MatchHistoryProps {
@@ -22,6 +24,21 @@ interface MatchHistoryProps {
 }
 
 export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
+  const [selectedMatch, setSelectedMatch] = useState<MatchWithDetails | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openBoxScore = (match: MatchWithDetails) => {
+    if (match.boxscore_url) {
+      setSelectedMatch(match);
+      setIsModalOpen(true);
+    }
+  };
+
+  const closeBoxScore = () => {
+    setIsModalOpen(false);
+    setSelectedMatch(null);
+  };
+
   const getMatchResult = (match: MatchWithDetails) => {
     if (!match.team_a || !match.team_b) return null;
     
@@ -173,9 +190,14 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
                 const isWinner = result === 'win';
                 const isDraw = result === 'draw';
                 const matchDate = match.played_at ? new Date(match.played_at) : null;
+                const hasBoxScore = !!match.boxscore_url;
                 
                 return (
-                  <tr key={match.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr 
+                    key={match.id} 
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${hasBoxScore ? 'cursor-pointer' : ''}`}
+                    onClick={() => hasBoxScore && openBoxScore(match)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col space-y-1">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -225,16 +247,23 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
                         <span className="text-sm text-gray-500 dark:text-gray-400">Friendly</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td 
+                      className={`px-6 py-4 whitespace-nowrap ${hasBoxScore ? 'group relative' : ''}`}
+                    >
                       {match.played_at && match.played_at <= new Date().toISOString() ? (
-                        <div className="text-sm font-mono">
-                          <span className={isWinner ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
+                        <div className="flex items-center">
+                          <span className={`font-mono ${isWinner ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                             {teamScore}
                           </span>
                           <span className="mx-1">-</span>
-                          <span className={!isWinner && !isDraw ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
+                          <span className={`font-mono ${!isWinner && !isDraw ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                             {opponentScore}
                           </span>
+                          {hasBoxScore && (
+                            <span className="ml-2 text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                              View Box Score
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <span className="text-sm text-gray-400 dark:text-gray-400">vs</span>
@@ -265,7 +294,7 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
                     </svg>
                     <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No matches found</h3>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      This team hasn&apos;t played any matches yet.
+                      This team hasn't played any matches yet.
                     </p>
                   </div>
                 </td>
@@ -274,6 +303,59 @@ export default function MatchHistory({ matches, teamId }: MatchHistoryProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Box Score Modal */}
+      {isModalOpen && selectedMatch?.boxscore_url && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={closeBoxScore}></div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6">
+              <div className="absolute top-0 right-0 pt-4 pr-4">
+                <button
+                  type="button"
+                  className="bg-white dark:bg-gray-700 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                  onClick={closeBoxScore}
+                >
+                  <span className="sr-only">Close</span>
+                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                    Box Score: {selectedMatch.team_a?.name || 'Team A'} vs {selectedMatch.team_b?.name || 'Team B'}
+                  </h3>
+                  <div className="mt-4">
+                    <div className="aspect-w-16 aspect-h-9">
+                      <img 
+                        src={selectedMatch.boxscore_url || ''} 
+                        alt={`Box score for match between ${selectedMatch.team_a?.name || 'Team A'} and ${selectedMatch.team_b?.name || 'Team B'}`}
+                        className="w-full h-auto rounded-lg"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-5 sm:mt-6">
+                <button
+                  type="button"
+                  className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                  onClick={closeBoxScore}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

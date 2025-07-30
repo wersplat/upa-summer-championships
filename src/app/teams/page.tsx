@@ -3,9 +3,11 @@ import TeamsPageClient from './TeamsPageClient';
 
 export const revalidate = 30; // Revalidate data every 30 seconds for near-live updates
 
-interface TeamCaptain {
+interface TeamPlayer {
   id: string;
   gamertag: string;
+  is_captain: boolean;
+  has_played: boolean;
 }
 
 interface TeamWithRegion {
@@ -22,32 +24,25 @@ interface TeamWithRegion {
     id: string;
     name: string;
   }>;
-  captain: TeamCaptain | null;
+  players: TeamPlayer[];
   wins: number;
   losses: number;
   points_differential: number;
-  group_points: number;
 }
 
 async function getTeams(): Promise<TeamWithRegion[]> {
   try {
     const eventId = '0d974c94-7531-41e9-833f-d1468690d72d';
     
-    // First get all teams with their basic info and captain
+    // First get all teams with their basic info and all players
     const { data: teams, error } = await supabase
       .from('teams')
       .select(`
         id,
         name,
         logo_url,
-        region_id,
-        current_rp,
-        elo_rating,
-        global_rank,
-        leaderboard_tier,
         created_at,
-        regions (id, name),
-        team_rosters!inner (
+        team_rosters (
           id,
           is_captain,
           players (
@@ -56,8 +51,7 @@ async function getTeams(): Promise<TeamWithRegion[]> {
           )
         )
       `)
-      .eq('team_rosters.event_id', eventId)
-      .eq('team_rosters.is_captain', true);
+      .eq('team_rosters.event_id', eventId);
 
     if (error) {
       console.error('Error fetching teams with rosters:', error);
@@ -75,13 +69,7 @@ async function getTeams(): Promise<TeamWithRegion[]> {
           id,
           name,
           logo_url,
-          region_id,
-          current_rp,
-          elo_rating,
-          global_rank,
-          leaderboard_tier,
           created_at,
-          regions (id, name),
           team_rosters (
             id,
             is_captain,
@@ -98,111 +86,140 @@ async function getTeams(): Promise<TeamWithRegion[]> {
         throw allTeamsError;
       }
 
-      // Process fallback teams to include captain information and default stats
+      // Define types for the roster and player objects
+      type RosterPlayer = {
+        id: string;
+        gamertag: string;
+      };
+      
+      type TeamRoster = {
+        players: RosterPlayer | null;
+        is_captain: boolean;
+      };
+      
+      // Process fallback teams to include all players and default stats
       return (allTeams || []).map(team => {
-        // Find the captain from team_rosters
-        const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
-        const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
+        // Get all players from team_rosters
+        const rosters = (team.team_rosters || []) as unknown as TeamRoster[];
+        const players = rosters
+          .filter(roster => roster.players?.id)
+          .map(roster => ({
+            id: roster.players!.id,
+            gamertag: roster.players!.gamertag || 'Unknown',
+            is_captain: roster.is_captain || false,
+            has_played: false // In fallback mode, we don't know if they've played
+          }));
         
         return {
           ...team,
-          captain: captainPlayer ? {
-            id: captainPlayer.id,
-            gamertag: captainPlayer.gamertag
-          } : null,
+          players,
           wins: 0,
           losses: 0,
           points_differential: 0,
-          group_points: 0
         };
       });
     }
 
-    // Get match data and group points for all teams
-    const teamIds = teams.map(team => team.id);
-    const [
-      { data: matches },
-      { data: groupPoints },
-    ] = await Promise.all([
-      supabase
-        .from('matches')
-        .select('*')
-        .or(`team_a_id.in.(${teamIds.join(',')}),team_b_id.in.(${teamIds.join(',')})`)
-        .eq('event_id', eventId),
-      supabase
-        .from('group_points_standings')
-        .select('*')
-        .in('team_id', teamIds)
-        .eq('event_id', eventId)  // Ensure we only get points for the current event
-    ]);
+    // Get all matches for the event to calculate full event records
+    const { data: allEventMatches, error: matchesError } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('event_id', eventId);
+  
+    if (matchesError) {
+      console.error('Error fetching event matches:', matchesError);
+      throw matchesError;
+    }
+    
+    // Get all players who have played at least one game in this event
+    const { data: playersWithGames, error: playersError } = await supabase
+      .from('player_stats')
+      .select('player_id')
+      .in('match_id', allEventMatches?.map(m => m.id) || [])
+      .not('player_id', 'is', null);
+      
+    if (playersError) {
+      console.error('Error fetching players with games:', playersError);
+      throw playersError;
+    }
+    
+    // Create a Set for faster lookups of players with games
+    const playersWithGamesSet = new Set(
+      (playersWithGames || []).map(p => p.player_id)
+    );
+    
+    console.log(`Found ${playersWithGamesSet.size} players with game stats in this event`);
 
-    // Create a map of team_id to group points and other stats for quick lookup
-    const teamStatsMap = new Map();
-    (groupPoints || []).forEach(gp => {
-      teamStatsMap.set(gp.team_id, {
-        total_points: gp.total_points || 0,
-        wins: gp.wins || 0,
-        losses: gp.losses || 0,
-        points_for: gp.points_for || 0,
-        points_against: gp.points_against || 0,
-        point_differential: gp.point_differential || 0
-      });
-    });
-
-    // Calculate stats for each team
+    // Calculate full event stats for each team
     const teamsWithStats = teams.map(team => {
-      const teamMatches = (matches || []).filter(match => 
+      // Get all matches for this team in the event
+      // No need to filter by status here since we already filtered by stage in the query
+      const teamMatches = (allEventMatches || []).filter(match => 
         match.team_a_id === team.id || match.team_b_id === team.id
       );
       
-      const teamWins = teamMatches.filter(match => {
+      // Calculate full event stats
+      const eventWins = teamMatches.filter(match => {
         if (match.team_a_id === team.id) return (match.score_a || 0) > (match.score_b || 0);
         return (match.score_b || 0) > (match.score_a || 0);
       }).length;
       
-      const teamPointsFor = teamMatches.reduce((total, match) => {
+      const eventPointsFor = teamMatches.reduce((total, match) => {
         return total + (match.team_a_id === team.id ? (match.score_a || 0) : (match.score_b || 0));
       }, 0);
       
-      const teamPointsAgainst = teamMatches.reduce((total, match) => {
+      const eventPointsAgainst = teamMatches.reduce((total, match) => {
         return total + (match.team_a_id === team.id ? (match.score_b || 0) : (match.score_a || 0));
       }, 0);
       
-      const teamLosses = teamMatches.length - teamWins;
-      const pointsDiff = teamPointsFor - teamPointsAgainst;
+      const eventLosses = teamMatches.length - eventWins;
+      const eventPointDiff = eventPointsFor - eventPointsAgainst;
       
-      // Find the captain from team_rosters
-      const captainRoster = team.team_rosters?.find(tr => tr.is_captain);
-      const captainPlayer = captainRoster?.players as { id: string, gamertag: string } | undefined;
-      
-      // Get stats from group_points_standings if available, otherwise use calculated values
-      const teamStats = teamStatsMap.get(team.id) || {
-        total_points: 0,
-        wins: teamWins,
-        losses: teamLosses,
-        points_for: teamPointsFor,
-        points_against: teamPointsAgainst,
-        point_differential: pointsDiff
+      // Define types for the roster and player objects
+      type RosterPlayer = {
+        id: string;
+        gamertag: string;
       };
+      
+      type TeamRoster = {
+        players: RosterPlayer | null;
+        is_captain: boolean;
+      };
+      
+      // Get only players who have played at least one game (appear in player_stats)
+      const rosters = (team.team_rosters || []) as unknown as TeamRoster[];
+      const players = rosters
+        .filter(roster => roster.players?.id && playersWithGamesSet.has(roster.players.id))
+        .map(roster => ({
+          id: roster.players!.id,
+          gamertag: roster.players!.gamertag || 'Unknown',
+          is_captain: roster.is_captain || false,
+          has_played: true
+        }))
+        // Sort by gamertag
+        .sort((a, b) => a.gamertag.localeCompare(b.gamertag));
       
       return {
         ...team,
-        captain: captainPlayer ? {
-          id: captainPlayer.id,
-          gamertag: captainPlayer.gamertag
-        } : null,
-        wins: teamStats.wins,
-        losses: teamStats.losses,
-        points_for: teamStats.points_for,
-        points_against: teamStats.points_against,
-        points_differential: teamStats.point_differential,
-        group_points: teamStats.total_points
+        players,
+        wins: eventWins,
+        losses: eventLosses,
+        points_for: eventPointsFor,
+        points_against: eventPointsAgainst,
+        points_differential: eventPointDiff,
+        stats: {
+          wins: eventWins,
+          losses: eventLosses,
+          points_for: eventPointsFor,
+          points_against: eventPointsAgainst,
+          point_differential: eventPointDiff
+        }
       };
     });
 
-    // Sort by group points, then point differential
+    // Sort by wins, then point differential
     return teamsWithStats.sort((a, b) => {
-      if (a.group_points !== b.group_points) return b.group_points - a.group_points;
+      if (a.wins !== b.wins) return b.wins - a.wins;
       return b.points_differential - a.points_differential;
     });
   } catch (error) {
